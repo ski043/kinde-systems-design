@@ -7,16 +7,36 @@ MarshalDesk lets a business put a chat widget on its website, where visitors tal
 ### People and tenancy
 
 **Workspace**:
-The space that holds one business's knowledge, widget, and conversations. Created automatically when an owner signs up.
+The space that holds one business's knowledge, widget, and conversations. Created when an owner completes first-run setup after signing up. Kinde calls this an organization; that word stays inside Kinde adapter code.
 _Avoid_: Organization, tenant, account, company
 
 **Member**:
-A person with access to a workspace's dashboard. In v1 every workspace has exactly one member: its owner.
+A person with access to a workspace's dashboard. A workspace has many members, a person belongs to one workspace, and each member has one role.
 _Avoid_: User, teammate, staff, operator
 
 **Owner**:
-The member who signed up and created the workspace.
+The member who created the workspace. Every workspace has exactly one owner.
 _Avoid_: Admin, business user
+
+**Role**:
+A named set of permissions given to a member: owner, support, or billing admin. Roles are for assigning access, never for checking it.
+_Avoid_: Level, group, position
+
+**Permission**:
+A single thing a member may do, such as replying to conversations. Every server check asks for a permission, never a role.
+_Avoid_: Scope, privilege, right
+
+**Support** (role):
+A role that can read and reply to conversations and use reply suggestions.
+_Avoid_: Agent, staff, operator
+
+**Billing admin** (role):
+A role that can manage the plan and payment details, and nothing else.
+_Avoid_: Finance, accountant
+
+**Invitation**:
+An owner's offer of a role in the workspace to an email address. It's accepted when the invited person signs in with that email.
+_Avoid_: Invite link, request, signup link
 
 **Visitor**:
 An anonymous person talking to a workspace through the widget on the business's website. Never logs in.
@@ -91,3 +111,21 @@ _Avoid_: Docs, documents, training data, help center
 **Source**:
 A single item in the knowledge base: an uploaded file, or a piece of text typed directly into the dashboard.
 _Avoid_: Document, file, upload, article
+
+### Plans and usage
+
+**Plan**:
+What a workspace has bought: Free or Pro. It decides which features are available and how much of them is included.
+_Avoid_: Tier, subscription, package
+
+**Entitlement**:
+What a workspace's plan allows right now, such as reply suggestions and how many are left this billing cycle.
+_Avoid_: Quota, limit, feature flag
+
+**Reply suggestion**:
+A draft reply the AI writes for a member in an open conversation. It goes only to that member, who edits it and sends it like any reply. The visitor never sees it.
+_Avoid_: Suggested reply, AI draft
+
+**Usage ledger**:
+The app's own record of billable events, one row per reply suggestion. Only suggestions that finished successfully count. It is the source for what is reported to billing.
+_Avoid_: Usage log, meter, counter
