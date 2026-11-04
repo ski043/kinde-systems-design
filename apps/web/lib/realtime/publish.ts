@@ -4,13 +4,14 @@ import {
   REALTIME_PUBLISH_PATH_PREFIX,
   type ConversationEvent,
   type WorkspaceEvent,
+  type WorkspacePublication,
 } from "@marshaldesk/shared";
 
 const PUBLISH_TIMEOUT_MS = 2000;
 
 export type Publication =
   | { party: "conversation"; room: string; event: ConversationEvent }
-  | { party: "workspace"; room: string; event: WorkspaceEvent };
+  | { party: "workspace"; room: string; event: WorkspacePublication };
 
 /** Delivers one event. Never throws: the write it follows has already been saved. */
 async function publish(publication: Publication): Promise<boolean> {
@@ -55,6 +56,18 @@ export function publishWorkspaceEvent(
   event: WorkspaceEvent,
 ): Promise<boolean> {
   return publish({ party: "workspace", room: workspaceId, event });
+}
+
+/** Tells the Worker to close the member's sockets in every room (PRD T-7). */
+export function publishMemberRevoked(
+  workspaceId: string,
+  memberId: string,
+): Promise<boolean> {
+  return publish({
+    party: "workspace",
+    room: workspaceId,
+    event: { type: "member.revoked", memberId },
+  });
 }
 
 /**

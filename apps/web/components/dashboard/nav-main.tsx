@@ -1,10 +1,13 @@
 "use client";
 
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   BookOpenIcon,
+  CreditCardIcon,
   HouseIcon,
   InboxIcon,
   type LucideIcon,
+  UsersIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,46 +18,35 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { type AppRoute, routes } from "@/lib/routes";
+import {
+  allowedSections,
+  type DashboardSectionKey,
+} from "@/lib/dashboard-sections";
+import { orpc } from "@/lib/orpc/client";
 
-type NavItem = {
-  title: string;
-  href: AppRoute;
-  icon: LucideIcon;
-  isActive: (pathname: string) => boolean;
+const icons: Record<DashboardSectionKey, LucideIcon> = {
+  home: HouseIcon,
+  knowledge: BookOpenIcon,
+  inbox: InboxIcon,
+  billing: CreditCardIcon,
+  team: UsersIcon,
 };
 
-const items: readonly NavItem[] = [
-  {
-    title: "Home",
-    href: routes.dashboard,
-    icon: HouseIcon,
-    isActive: (pathname) => pathname === routes.dashboard,
-  },
-  {
-    title: "Knowledge base",
-    href: routes.knowledge,
-    icon: BookOpenIcon,
-    isActive: (pathname) => pathname === routes.knowledge,
-  },
-  {
-    title: "Inbox",
-    href: routes.inbox,
-    icon: InboxIcon,
-    isActive: (pathname) =>
-      pathname === routes.inbox || pathname.startsWith(`${routes.inbox}/`),
-  },
-];
-
+/** Only the sections the member's permissions open (PRD T-5). */
 export function NavMain() {
   const pathname = usePathname();
+  const { permissions } = useSuspenseQuery(
+    orpc.member.getCurrent.queryOptions(),
+  ).data;
+  const items = allowedSections(permissions);
 
   return (
     <SidebarGroup>
       <SidebarGroupContent>
         <SidebarMenu className="gap-1.5">
           {items.map((item) => {
-            const active = item.isActive(pathname);
+            const active = item.matches(pathname);
+            const Icon = icons[item.key];
             return (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
@@ -68,7 +60,7 @@ export function NavMain() {
                     />
                   }
                 >
-                  <item.icon />
+                  <Icon />
                   <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>

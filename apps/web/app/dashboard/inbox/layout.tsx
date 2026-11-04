@@ -6,6 +6,7 @@ import {
   INBOX_LAYOUT_COOKIE,
   parseInboxLayout,
 } from "@/lib/inbox/layout-cookie";
+import { requireSection } from "@/lib/auth/require-section";
 import { orpcServer } from "@/lib/orpc/server";
 import { getQueryClient } from "@/lib/query/client";
 
@@ -18,6 +19,7 @@ export default async function InboxLayout({
 }: {
   children: ReactNode;
 }) {
+  await requireSection("inbox");
   const cookieStore = await cookies();
   const defaultLayout = parseInboxLayout(
     cookieStore.get(INBOX_LAYOUT_COOKIE)?.value,

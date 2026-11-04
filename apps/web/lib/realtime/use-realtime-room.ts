@@ -3,6 +3,7 @@
 import {
   type ClientMessage,
   clientMessageSchema,
+  REALTIME_REVOKED_CLOSE_CODE,
   type RealtimeParty,
 } from "@marshaldesk/shared";
 import { PartySocket } from "partysocket";
@@ -128,6 +129,11 @@ export function useRealtimeRoom<Event>({
     },
     onClose(event) {
       if (!room || !fromRoom(event, room)) return;
+      if (event.code === REALTIME_REVOKED_CLOSE_CODE) {
+        // Removed, or lost `conversations:read`: the server decides where to go now.
+        window.location.reload();
+        return;
+      }
       setConnection({ room, phase: "reconnecting" });
     },
     onMessage(message) {

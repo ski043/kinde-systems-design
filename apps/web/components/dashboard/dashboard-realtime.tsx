@@ -81,13 +81,17 @@ export function DashboardRealtime({ children }: { children: ReactNode }) {
   const router = useRouter();
   const params = useParams<{ conversationId?: string }>();
   const openId = params.conversationId;
-  const workspaceId = useQuery(orpc.owner.getCurrent.queryOptions()).data
-    ?.workspace.id;
-  const conversations = useQuery(
-    conversationListOptions(queryClient, {
+  const current = useQuery(orpc.member.getCurrent.queryOptions()).data;
+  // Only members who can read conversations get a workspace room and a badge.
+  const readsConversations =
+    current?.permissions.includes("conversations:read") ?? false;
+  const workspaceId = readsConversations ? current?.workspace.id : undefined;
+  const conversations = useQuery({
+    ...conversationListOptions(queryClient, {
       refetchInterval: realtimeEnabled ? false : 10_000,
     }),
-  ).data?.conversations;
+    enabled: readsConversations,
+  }).data?.conversations;
 
   const unread =
     conversations?.filter(

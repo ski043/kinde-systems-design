@@ -79,6 +79,9 @@ export function useWidgetSettingsAutosave(
           await client.widgetSettings.update(snapshot);
         lastSaved.current = serialize(snapshot);
         failed.current = null;
+        void queryClient.invalidateQueries({
+          queryKey: orpc.member.getCurrent.queryKey(),
+        });
         queryClient.setQueryData(
           orpc.widgetSettings.get.queryKey(),
           // The avatar has its own mutations, so a cached value (even a

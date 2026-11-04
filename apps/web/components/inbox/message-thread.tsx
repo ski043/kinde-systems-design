@@ -22,7 +22,7 @@ import {
   AgentAvatar,
   MemberAvatar,
   useAgent,
-  useOwner,
+  useCurrentMember,
   VisitorAvatar,
 } from "@/components/inbox/participant-avatar";
 import { ChunkPreviewDialog } from "@/components/dashboard/chunk-preview-dialog";
@@ -280,7 +280,7 @@ function MessageGroup({
   isNew: (id: string) => boolean;
 }) {
   const agent = useAgent();
-  const owner = useOwner();
+  const currentMember = useCurrentMember();
   const fromVisitor = item.author === "visitor";
   const first = item.messages[0];
   if (!first) {
@@ -300,7 +300,7 @@ function MessageGroup({
       break;
     case "member":
       name =
-        first.member.id === owner.id
+        first.member.id === currentMember.id
           ? `${first.member.name} (you)`
           : first.member.name;
       avatar = <MemberAvatar member={first.member} />;

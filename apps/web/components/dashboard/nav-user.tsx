@@ -2,8 +2,6 @@
 
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { EllipsisVerticalIcon, LogOutIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -20,10 +18,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { authRequest } from "@/components/auth/auth-error";
-import { authClient } from "@/lib/auth/client";
+import { kindeRoutes } from "@/lib/kinde/urls";
 import { orpc } from "@/lib/orpc/client";
-import { routes } from "@/lib/routes";
 
 function initialsFor(name: string, email: string): string {
   const initials = name
@@ -38,29 +34,10 @@ function initialsFor(name: string, email: string): string {
 
 export function NavUser() {
   const { isMobile } = useSidebar();
-  const router = useRouter();
   const {
-    data: { owner },
-  } = useSuspenseQuery(orpc.owner.getCurrent.queryOptions());
-  const [signingOut, setSigningOut] = useState(false);
-  const signOutStarted = useRef(false);
-
-  const initials = initialsFor(owner.name, owner.email);
-
-  async function signOut() {
-    if (signOutStarted.current) return;
-    signOutStarted.current = true;
-    setSigningOut(true);
-
-    const error = await authRequest(() => authClient.signOut());
-    if (error) {
-      signOutStarted.current = false;
-      setSigningOut(false);
-      return;
-    }
-    router.replace(routes.signIn);
-    router.refresh();
-  }
+    data: { member },
+  } = useSuspenseQuery(orpc.member.getCurrent.queryOptions());
+  const initials = initialsFor(member.name, member.email);
 
   return (
     <SidebarMenu>
@@ -75,13 +52,13 @@ export function NavUser() {
             }
           >
             <Avatar className="size-9 rounded-lg group-data-[collapsible=icon]:size-10">
-              <AvatarImage src={owner.avatarUrl} alt={owner.name} />
+              <AvatarImage src={member.avatarUrl} alt={member.name} />
               <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">{owner.name}</span>
+              <span className="truncate font-medium">{member.name}</span>
               <span className="truncate text-xs text-foreground/80">
-                {owner.email}
+                {member.email}
               </span>
             </div>
             <EllipsisVerticalIcon className="ml-auto size-4" />
@@ -96,28 +73,24 @@ export function NavUser() {
               <DropdownMenuLabel className="p-0 font-normal text-foreground">
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                   <Avatar className="size-8">
-                    <AvatarImage src={owner.avatarUrl} alt={owner.name} />
+                    <AvatarImage src={member.avatarUrl} alt={member.name} />
                     <AvatarFallback className="rounded-lg">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{owner.name}</span>
+                    <span className="truncate font-medium">{member.name}</span>
                     <span className="truncate text-xs text-foreground/80">
-                      {owner.email}
+                      {member.email}
                     </span>
                   </div>
                 </div>
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              closeOnClick={false}
-              disabled={signingOut}
-              onClick={() => void signOut()}
-            >
+            <DropdownMenuItem render={<a href={kindeRoutes.logout} />}>
               <LogOutIcon />
-              {signingOut ? "Signing out…" : "Sign out"}
+              Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

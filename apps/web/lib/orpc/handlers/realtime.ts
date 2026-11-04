@@ -11,25 +11,29 @@ import type {
 } from "@marshaldesk/shared";
 import { publishInOrder, type Publication } from "@/lib/realtime/publish";
 import { signRealtimeToken } from "@/lib/realtime/token";
-import { ownerProcedure } from "../procedures";
+import { memberProcedure, requirePermission } from "../procedures";
 import { toConversationSummary, toMessages } from "./conversation-mappers";
 
-export const getToken = ownerProcedure.realtime.getToken.handler(
+const readConversations = memberProcedure.use(
+  requirePermission("conversations:read"),
+);
+
+export const getToken = readConversations.realtime.getToken.handler(
   async ({ context, input, errors }) => {
-    const owner = {
-      role: "owner",
+    const member = {
+      role: "member",
       workspaceId: context.workspaceId,
       memberId: context.member.id,
     } as const;
     if (!input.conversationId) {
-      return { token: await signRealtimeToken(owner) };
+      return { token: await signRealtimeToken(member) };
     }
     if (!(await hasConversation(context.workspaceId, input.conversationId))) {
       throw errors.NOT_FOUND();
     }
     return {
       token: await signRealtimeToken({
-        ...owner,
+        ...member,
         conversationId: input.conversationId,
       }),
     };

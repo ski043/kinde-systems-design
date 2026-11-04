@@ -32,7 +32,7 @@ import { DomainsSection } from "./domains-section";
 export function WidgetSettingsScreen() {
   const {
     data: { workspace },
-  } = useSuspenseQuery(orpc.owner.getCurrent.queryOptions());
+  } = useSuspenseQuery(orpc.member.getCurrent.queryOptions());
 
   const { data: saved } = useSuspenseQuery(
     orpc.widgetSettings.get.queryOptions(),

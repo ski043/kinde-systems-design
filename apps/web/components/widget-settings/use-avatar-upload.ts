@@ -44,6 +44,9 @@ export function useAvatarUpload(): AvatarUpload {
   const [error, setError] = useState<string | null>(null);
 
   function applySaved(saved: SavedWidgetSettings) {
+    void queryClient.invalidateQueries({
+      queryKey: orpc.member.getCurrent.queryKey(),
+    });
     queryClient.setQueryData(orpc.widgetSettings.get.queryKey(), (current) => ({
       ...saved,
       settings: current?.settings ?? saved.settings,

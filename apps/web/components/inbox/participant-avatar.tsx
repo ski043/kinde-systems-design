@@ -10,23 +10,23 @@ import { generatedAgentAvatarUrl } from "@/lib/widget/agent-avatar";
 
 type Size = "sm" | "default" | "lg";
 
-export function useOwner() {
-  return useSuspenseQuery(orpc.owner.getCurrent.queryOptions()).data.owner;
+export function useCurrentMember() {
+  return useSuspenseQuery(orpc.member.getCurrent.queryOptions()).data.member;
 }
 
-/** The agent as the widget shows it, so a rename in settings shows here too. */
+/**
+ * The agent as the widget shows it. Read from `member.getCurrent`, since only
+ * `widget:manage` may read the widget settings; saving them refreshes it.
+ */
 export function useAgent(): { name: string; avatarUrl: string } {
-  const { settings, agentAvatarUrl } = useSuspenseQuery(
-    orpc.widgetSettings.get.queryOptions(),
-  ).data;
+  const { agent, accentColor } = useSuspenseQuery(
+    orpc.member.getCurrent.queryOptions(),
+  ).data.workspace;
   return {
-    name: settings.agentName,
+    name: agent.name,
     avatarUrl:
-      agentAvatarUrl ??
-      generatedAgentAvatarUrl(
-        settings.agentName,
-        widgetAccent(settings.color).background,
-      ),
+      agent.avatarUrl ??
+      generatedAgentAvatarUrl(agent.name, widgetAccent(accentColor).background),
   };
 }
 

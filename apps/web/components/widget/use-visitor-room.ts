@@ -81,7 +81,7 @@ export function useVisitorRoom({
         }
         return;
       case "typing":
-        if (event.role === "owner") owner.receive(event.typing);
+        if (event.role === "member") owner.receive(event.typing);
         return;
       case "agent.chunk":
       case "agent.done":

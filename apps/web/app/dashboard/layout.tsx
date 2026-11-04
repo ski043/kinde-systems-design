@@ -20,18 +20,14 @@ export default async function DashboardLayout({
 }: {
   children: ReactNode;
 }) {
-  const viewer = await requireViewer(["ready"]);
+  const { current } = await requireViewer(["ready"]);
 
   const queryClient = getQueryClient();
-  queryClient.setQueryData(
-    orpcServer.owner.getCurrent.queryKey(),
-    viewer.current,
-  );
-  const [widgetSettings] = await Promise.all([
-    queryClient.fetchQuery(orpcServer.widgetSettings.get.queryOptions()),
+  queryClient.setQueryData(orpcServer.member.getCurrent.queryKey(), current);
+  if (current.permissions.includes("conversations:read")) {
     // The tab badge counts unread conversations on every dashboard page.
-    queryClient.prefetchQuery(orpcServer.inbox.list.queryOptions()),
-  ]);
+    await queryClient.prefetchQuery(orpcServer.inbox.list.queryOptions());
+  }
 
   const defaultOpen =
     (await cookies()).get(SIDEBAR_COOKIE_NAME)?.value !== "false";
@@ -39,7 +35,7 @@ export default async function DashboardLayout({
   return (
     <Providers>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <DashboardAccentProvider initialColor={widgetSettings.settings.color}>
+        <DashboardAccentProvider initialColor={current.workspace.accentColor}>
           <DashboardRealtime>
             <TooltipProvider>
               <SidebarProvider

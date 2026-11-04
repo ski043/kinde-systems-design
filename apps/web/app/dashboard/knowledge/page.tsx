@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import type { Metadata } from "next";
 import { KnowledgeScreen } from "@/components/knowledge/knowledge-screen";
+import { requireSection } from "@/lib/auth/require-section";
 import { orpcServer } from "@/lib/orpc/server";
 import { getQueryClient } from "@/lib/query/client";
 
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function KnowledgePage() {
+  await requireSection("knowledge");
   const queryClient = getQueryClient();
   await queryClient.prefetchQuery(orpcServer.knowledge.get.queryOptions());
   const knowledgeKey = orpcServer.knowledge.key();
