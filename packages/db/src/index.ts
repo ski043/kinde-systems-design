@@ -55,13 +55,48 @@ export {
   type VisitorRecord,
 } from "./visitors";
 export {
+  findLatestUsageReport,
+  hasKindeWebhookDelivery,
+  listWorkspacesWithRecentUsage,
+  markBillingChanged,
+  recordKindeWebhookDelivery,
+  recordUsageReport,
+  withAdvisoryLock,
+  type AdvisoryLockScope,
+  type BillingChangeTarget,
+  type NewUsageReport,
+  type UsageReportRecord,
+} from "./billing";
+export {
   createWorkspaceWithOwner,
-  findMembershipByUserId,
+  findMembership,
+  findMembershipByKindeUserId,
   getWorkspace,
   type MemberRecord,
+  type MemberRoleValue,
   type Membership,
+  type NewWorkspaceWithOwner,
   type WorkspaceRecord,
 } from "./workspaces";
+export {
+  acceptInvitation,
+  changeMemberRole,
+  createInvitation,
+  deleteMember,
+  findPendingInvitationByEmail,
+  getMember,
+  isEmailInAnyWorkspace,
+  listMembers,
+  listPendingInvitations,
+  revokeInvitation,
+  type AssignableRoleValue,
+  type InvitationAcceptance,
+  type InvitationRecord,
+  type InvitationStatusValue,
+  type NewInvitation,
+  type PendingInvitation,
+  type TeamMemberRecord,
+} from "./team";
 export {
   claimSourceIngest,
   completeSourceIngest,
@@ -106,3 +141,12 @@ export {
   type ReplySourceRecord,
   type RetrievedChunk,
 } from "./knowledge";
+export {
+  claimReplySuggestion,
+  countSucceededReplySuggestions,
+  finishReplySuggestion,
+  type NewReplySuggestion,
+  type ReplySuggestionClaim,
+  type ReplySuggestionResult,
+  type ReplySuggestionStatusValue,
+} from "./reply-suggestions";

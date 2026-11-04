@@ -1,13 +1,17 @@
 import { oc } from "@orpc/contract";
 import { openapi } from "@orpc/openapi";
+import { billingContract } from "./contracts/billing";
 import { inboxContract } from "./contracts/inbox";
 import { knowledgeContract } from "./contracts/knowledge";
+import { teamContract } from "./contracts/team";
 import { widgetContract } from "./contracts/widget";
 import {
+  acceptInvitationErrors,
+  authenticatedErrors,
   avatarErrors,
   ConversationNotFoundError,
-  ownerErrors,
-  signedInErrors,
+  memberErrors,
+  permissionErrors,
 } from "./errors";
 import { realtimeTokenSchema } from "./realtime";
 import * as z from "zod";
@@ -19,16 +23,22 @@ import {
   widgetSettingsSchema,
 } from "./schemas/widget";
 import {
+  createdWorkspaceSchema,
   createWorkspaceSchema,
-  currentOwnerSchema,
-  workspaceSchema,
+  currentMembershipSchema,
 } from "./schemas/workspace";
 
 export const ERROR_STATUS = {
   UNAUTHORIZED: 401,
-  EMAIL_NOT_VERIFIED: 403,
   WORKSPACE_REQUIRED: 403,
+  PERMISSION_DENIED: 403,
   AVATAR_REJECTED: 422,
+  OWNER_PROTECTED: 403,
+  ALREADY_IN_WORKSPACE: 409,
+  ALREADY_INVITED: 409,
+  ROLE_UNAVAILABLE: 409,
+  PLAN_REQUIRED: 402,
+  SUGGESTION_IN_PROGRESS: 409,
   VISITOR_UNAUTHORIZED: 401,
   DOMAIN_NOT_ALLOWED: 403,
 } as const;
@@ -36,38 +46,56 @@ export const ERROR_STATUS = {
 export type ErrorCode = keyof typeof ERROR_STATUS;
 
 export const contract = {
-  owner: {
+  member: {
     getCurrent: oc
-      .errors(ownerErrors)
+      .errors(memberErrors)
       .meta(
         openapi({
           method: "GET",
-          path: "/owner",
-          summary: "Get the signed-in owner and their workspace",
-          tags: ["Owner"],
+          path: "/member",
+          summary:
+            "Get the signed-in member, their workspace, and their permissions",
+          tags: ["Member"],
         }),
       )
-      .output(currentOwnerSchema),
+      .output(currentMembershipSchema),
   },
   workspace: {
     create: oc
-      .errors(signedInErrors)
+      .errors(authenticatedErrors)
       .meta(
         openapi({
           method: "POST",
           path: "/workspace",
-          summary: "Create the owner's workspace from their business name",
+          summary:
+            "Create the signed-in person's workspace from their business name",
           description:
-            "Idempotent: an owner has exactly one workspace, so calling it again returns the existing one.",
+            "Idempotent: a person has at most one workspace, so calling it again returns the existing one. Open `continueUrl` next to sign in to the workspace.",
           tags: ["Workspace"],
         }),
       )
       .input(createWorkspaceSchema)
-      .output(workspaceSchema),
+      .output(createdWorkspaceSchema),
+    acceptInvitation: oc
+      .errors(acceptInvitationErrors)
+      .meta(
+        openapi({
+          method: "POST",
+          path: "/workspace/invitation",
+          summary:
+            "Join the workspace that invited the signed-in person's verified email",
+          description:
+            "Idempotent: calling it again after joining returns the same workspace. Open `continueUrl` next to sign in to the workspace.",
+          tags: ["Workspace"],
+        }),
+      )
+      .output(createdWorkspaceSchema),
   },
+  team: teamContract,
+  billing: billingContract,
   widgetSettings: {
     get: oc
-      .errors(ownerErrors)
+      .errors(permissionErrors)
       .meta(
         openapi({
           method: "GET",
@@ -78,7 +106,7 @@ export const contract = {
       )
       .output(savedWidgetSettingsSchema),
     update: oc
-      .errors(ownerErrors)
+      .errors(permissionErrors)
       .meta(
         openapi({
           method: "PUT",
@@ -118,7 +146,7 @@ export const contract = {
       .input(confirmAvatarUploadSchema)
       .output(savedWidgetSettingsSchema),
     removeAvatar: oc
-      .errors(ownerErrors)
+      .errors(permissionErrors)
       .meta(
         openapi({
           method: "DELETE",
@@ -135,7 +163,7 @@ export const contract = {
   realtime: {
     getToken: oc
       .errors({
-        ...ownerErrors,
+        ...permissionErrors,
         [ConversationNotFoundError.code]: ConversationNotFoundError,
       })
       .meta(

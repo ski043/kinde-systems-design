@@ -1,18 +1,22 @@
 import "server-only";
-import {
-  findMembershipByUserId,
-  getWidgetAllowedDomains,
-} from "@marshaldesk/db";
+import { findMembership, getWidgetAllowedDomains } from "@marshaldesk/db";
 import {
   contract,
   DomainNotAllowedError,
-  EmailNotVerifiedError,
+  type Permission,
+  PermissionDeniedError,
+  PlanRequiredError,
   UnauthorizedError,
   VisitorUnauthorizedError,
   WorkspaceRequiredError,
 } from "@marshaldesk/shared";
 import { implement } from "@orpc/server";
-import { auth } from "@/lib/auth/server";
+import {
+  checkEntitlement,
+  type EntitledFeature,
+} from "@/lib/billing/entitlements";
+import { effectivePermissions } from "@/lib/kinde/permissions";
+import { getKindeSession } from "@/lib/kinde/session";
 import {
   bearerToken,
   isHostAllowed,
@@ -21,50 +25,82 @@ import {
 
 export type BaseContext = { headers: Headers };
 
-export type SessionUser = {
-  id: string;
-  name: string;
-  email: string;
-  image: string | null;
-};
-
 export const base = implement(contract).$context<BaseContext>();
 
-/** A signed-in owner whose email is verified. They may not have a workspace yet. */
-export const verifiedProcedure = base.use(async ({ next }) => {
-  const { data } = await auth.getSession();
-  const user = data?.user;
-  if (!user) {
+/** 1. Authentication: a verified Kinde session. The person may not have a workspace yet. */
+export const authenticatedProcedure = base.use(async ({ next }) => {
+  const session = await getKindeSession();
+  if (!session) {
     throw new UnauthorizedError();
   }
-  if (!user.emailVerified) {
-    throw new EmailNotVerifiedError();
-  }
-
-  const sessionUser: SessionUser = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    image: user.image ?? null,
-  };
-  return next({ context: { user: sessionUser } });
+  return next({ context: { session } });
 });
 
-/** A verified owner with a workspace. `workspaceId` only ever comes from here. */
-export const ownerProcedure = verifiedProcedure.use(
+/**
+ * 2. Membership: the session's organization is a workspace and the person is
+ * its member. `workspaceId` only ever comes from here. `permissions` are the
+ * effective ones, refreshed from Kinde when the token predates a role change.
+ */
+export const memberProcedure = authenticatedProcedure.use(
   async ({ context, next }) => {
-    const membership = await findMembershipByUserId(context.user.id);
-    if (!membership) {
+    const { orgCode, kindeUserId } = context.session;
+    const membership = orgCode
+      ? await findMembership(orgCode, kindeUserId)
+      : null;
+    if (!orgCode || !membership) {
       throw new WorkspaceRequiredError();
     }
+    const permissions = await effectivePermissions({
+      orgCode,
+      kindeUserId,
+      tokenPermissions: context.session.permissions,
+      tokenIssuedAt: context.session.tokenIssuedAt,
+      accessChangedAt: membership.member.accessChangedAt,
+    });
     return next({
       context: {
         member: membership.member,
         workspaceId: membership.workspace.id,
+        kindeOrgCode: membership.workspace.kindeOrgCode,
+        permissions,
       },
     });
   },
 );
+
+/** 3. Authorization: the member holds `permission`. Use after `memberProcedure`. */
+export function requirePermission(permission: Permission) {
+  return base
+    .$context<BaseContext & { permissions: readonly Permission[] }>()
+    .middleware(async ({ context, next }) => {
+      if (!context.permissions.includes(permission)) {
+        throw new PermissionDeniedError({ data: { permission } });
+      }
+      return next();
+    });
+}
+
+/**
+ * 4. Entitlement: the workspace's plan in Kinde Billing includes `feature`.
+ * Use after `requirePermission`.
+ */
+export function requireEntitlement(feature: EntitledFeature) {
+  return base
+    .$context<BaseContext & { workspaceId: string }>()
+    .middleware(async ({ context, next }) => {
+      const entitlement = await checkEntitlement(context.workspaceId, feature);
+      switch (entitlement.kind) {
+        case "not_included":
+          throw new PlanRequiredError();
+        case "included":
+          return next();
+        default: {
+          const unhandled: never = entitlement;
+          throw new Error(`Unhandled entitlement: ${String(unhandled)}`);
+        }
+      }
+    });
+}
 
 /**
  * A widget visitor, from the `Authorization: Bearer` visitor token. `workspaceId`

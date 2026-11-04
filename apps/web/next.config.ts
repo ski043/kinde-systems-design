@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@marshaldesk/shared", "@marshaldesk/db"],
+  transpilePackages: [
+    "@marshaldesk/shared",
+    "@marshaldesk/db",
+    "@marshaldesk/kinde",
+  ],
   serverExternalPackages: ["@prisma/orm-postgres", "pg"],
   async headers() {
     return [

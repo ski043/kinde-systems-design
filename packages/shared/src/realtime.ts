@@ -18,14 +18,15 @@ export const REALTIME_TOKEN_TTL_SECONDS = 60;
 
 /**
  * Claims of the short-lived token that opens a socket. The Worker trusts only
- * these: it has no database access and never sees Neon Auth tokens.
+ * these: it has no database access and never sees Kinde tokens.
  */
 export const realtimeTokenClaimsSchema = z.discriminatedUnion("role", [
   z.object({
-    role: z.literal("owner"),
+    role: z.literal("member"),
     workspaceId: z.string(),
+    /** Kept in the connection state, so `member.revoked` can find the member's sockets. */
     memberId: z.string(),
-    /** Present when the owner may join this conversation's room; checked by `ownerProcedure`. */
+    /** Present when the member may join this conversation's room; checked by `realtime.getToken`. */
     conversationId: z.string().optional(),
   }),
   z.object({
@@ -37,7 +38,7 @@ export const realtimeTokenClaimsSchema = z.discriminatedUnion("role", [
 ]);
 export type RealtimeTokenClaims = z.infer<typeof realtimeTokenClaimsSchema>;
 
-export const typingRoleSchema = z.enum(["visitor", "owner"]);
+export const typingRoleSchema = z.enum(["visitor", "member"]);
 export type TypingRole = z.infer<typeof typingRoleSchema>;
 
 /**
@@ -59,7 +60,7 @@ export const agentDoneEventSchema = z.object({
   messageId: z.string(),
 });
 
-/** Events delivered in a conversation room, to the visitor and any owner viewing it. */
+/** Events delivered in a conversation room, to the visitor and any member viewing it. */
 export const conversationEventSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("message.created"),
@@ -81,7 +82,7 @@ export const conversationEventSchema = z.discriminatedUnion("type", [
 ]);
 export type ConversationEvent = z.infer<typeof conversationEventSchema>;
 
-/** Events delivered in a workspace room, to the owner only. */
+/** Events delivered in a workspace room, to members only. */
 export const workspaceEventSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("conversation.upserted"),
@@ -110,6 +111,28 @@ export const workspaceEventSchema = z.discriminatedUnion("type", [
   }),
 ]);
 export type WorkspaceEvent = z.infer<typeof workspaceEventSchema>;
+
+/**
+ * Published to the workspace room when a member is removed or loses
+ * `conversations:read`. The Worker isn't told why: it closes every socket of
+ * that member, in the workspace room and in any conversation room, with
+ * `REALTIME_REVOKED_CLOSE_CODE`. It is never delivered to clients.
+ */
+export const memberRevokedEventSchema = z.object({
+  type: z.literal("member.revoked"),
+  memberId: z.string(),
+});
+export type MemberRevokedEvent = z.infer<typeof memberRevokedEventSchema>;
+
+/** Everything the server may publish to a workspace room. */
+export const workspacePublicationSchema = z.discriminatedUnion("type", [
+  ...workspaceEventSchema.options,
+  memberRevokedEventSchema,
+]);
+export type WorkspacePublication = z.infer<typeof workspacePublicationSchema>;
+
+/** The close code of a revoked member's sockets. Clients reload instead of reconnecting. */
+export const REALTIME_REVOKED_CLOSE_CODE = 4403;
 
 /** The only thing clients may send. Everything persistent goes through oRPC. */
 export const clientMessageSchema = z.object({

@@ -1,8 +1,11 @@
 // use prisma-8
 
+// A display copy of the member's Kinde role. Permission checks never read it.
 enum MemberRole {
   @@type("pg/text@1")
-  Owner = "owner"
+  Owner        = "owner"
+  Support      = "support"
+  BillingAdmin = "billing-admin"
 }
 
 enum WidgetColor {
@@ -25,6 +28,11 @@ enum WidgetPosition {
 model Workspace {
   id             Uuid                  @id @default(uuid(7))
   name           String
+  kindeOrgCode   String                @unique @map("kinde_org_code")
+  // Null for a workspace created before billing; it has no plan.
+  kindeBillingCustomerId String?       @unique @map("kinde_billing_customer_id")
+  // Bumped by Kinde billing webhooks. Billing state cached before it is stale.
+  billingChangedAt DateTime            @default(now()) @map("billing_changed_at")
   agentEnabled   Boolean               @default(true) @map("agent_enabled")
   // Null means "{workspace name} Agent", so renaming the workspace carries over.
   agentName      String?               @map("agent_name")
@@ -46,6 +54,9 @@ model Workspace {
   sources       Source[]
   chunks        Chunk[]
   agentTurns    AgentTurn[]
+  invitations      Invitation[]
+  replySuggestions ReplySuggestion[]
+  usageReports     UsageReport[]
 
   @@map("workspaces")
 }
@@ -53,16 +64,22 @@ model Workspace {
 model Member {
   id          Uuid                  @id @default(uuid(7))
   workspaceId Uuid                  @map("workspace_id")
-  userId      Uuid                  @unique @map("user_id")
+  // Unique: a person belongs to at most one workspace.
+  kindeUserId String                @unique @map("kinde_user_id")
+  email       String
   role        MemberRole
   name        String
   avatarUrl   String?               @map("avatar_url")
   avatarKey   String?               @map("avatar_key")
+  // Bumped on every role change. Tokens issued before it carry stale permissions.
+  accessChangedAt DateTime          @default(now()) @map("access_changed_at")
   createdAt   DateTime              @default(now()) @map("created_at")
   updatedAt   temporal.updatedAt() @map("updated_at")
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  messages  Message[]
+  workspace        Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  messages         Message[]
+  invitationsSent  Invitation[]
+  replySuggestions ReplySuggestion[]
 
   @@index([workspaceId])
   @@map("members")
@@ -134,6 +151,7 @@ model Conversation {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   visitor   Visitor   @relation(fields: [visitorId], references: [id], onDelete: Cascade)
   messages  Message[]
+  replySuggestions ReplySuggestion[]
 
   @@index([workspaceId, lastMessageAt])
   @@index([visitorId], where: "(state <> 'closed')", unique: true, name: "conversations_one_open_per_visitor")
@@ -264,4 +282,99 @@ model AgentTurn {
   @@index([workspaceId, createdAt])
   @@index([messageId])
   @@map("agent_turns")
+}
+
+enum InvitationRole {
+  @@type("pg/text@1")
+  Support      = "support"
+  BillingAdmin = "billing-admin"
+}
+
+enum InvitationStatus {
+  @@type("pg/text@1")
+  Pending  = "pending"
+  Accepted = "accepted"
+  Revoked  = "revoked"
+}
+
+model Invitation {
+  id                Uuid             @id @default(uuid(7))
+  workspaceId       Uuid             @map("workspace_id")
+  // Stored lowercased; matched against the invitee's verified Kinde email.
+  email             String
+  role              InvitationRole
+  invitedByMemberId Uuid             @map("invited_by_member_id")
+  status            InvitationStatus @default(Pending)
+  createdAt         DateTime         @default(now()) @map("created_at")
+  acceptedAt        DateTime?        @map("accepted_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy Member    @relation(fields: [invitedByMemberId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, createdAt])
+  @@index([workspaceId, email], where: "(status = 'pending')", unique: true, name: "invitations_one_pending_per_email")
+  @@map("invitations")
+}
+
+enum ReplySuggestionStatus {
+  @@type("pg/text@1")
+  Pending   = "pending"
+  Succeeded = "succeeded"
+  Failed    = "failed"
+}
+
+// Succeeded rows are the usage ledger for reply suggestions.
+model ReplySuggestion {
+  id             Uuid                  @id @default(uuid(7))
+  workspaceId    Uuid                  @map("workspace_id")
+  conversationId Uuid                  @map("conversation_id")
+  // Null once the member is removed; the row still counts as usage.
+  memberId       Uuid?                 @map("member_id")
+  idempotencyKey String                @map("idempotency_key")
+  status         ReplySuggestionStatus @default(Pending)
+  body           String?
+  model          String
+  tokensIn       Int                   @default(0) @map("tokens_in")
+  tokensOut      Int                   @default(0) @map("tokens_out")
+  latencyMs      Int?                  @map("latency_ms")
+  error          String?
+  createdAt      DateTime              @default(now()) @map("created_at")
+  finishedAt     DateTime?             @map("finished_at")
+
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  member       Member?      @relation(fields: [memberId], references: [id], onDelete: SetNull)
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([workspaceId, status, createdAt])
+  @@index([conversationId])
+  @@index([memberId])
+  @@map("reply_suggestions")
+}
+
+// One accepted absolute total sent to Kinde Billing for a billing cycle.
+model UsageReport {
+  id               Uuid      @id @default(uuid(7))
+  workspaceId      Uuid      @map("workspace_id")
+  feature          String
+  kindeAgreementId String    @map("kinde_agreement_id")
+  cycleStart       DateTime  @map("cycle_start")
+  cycleEnd         DateTime  @map("cycle_end")
+  reportedTotal    Int       @map("reported_total")
+  kindeRecordId    String    @map("kinde_record_id")
+  reportedAt       DateTime  @default(now()) @map("reported_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, kindeAgreementId, cycleStart, reportedAt], name: "usage_reports_latest")
+  @@map("usage_reports")
+}
+
+// Kinde webhook deliveries already handled, by their `webhook-id` header.
+model KindeWebhookDelivery {
+  webhookId  String   @id @map("webhook_id")
+  type       String
+  receivedAt DateTime @default(now()) @map("received_at")
+
+  @@map("kinde_webhook_deliveries")
 }

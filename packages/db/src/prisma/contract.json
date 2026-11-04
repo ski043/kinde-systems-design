@@ -16,6 +16,14 @@
       "model": "Conversation",
       "namespace": "public"
     },
+    "invitations": {
+      "model": "Invitation",
+      "namespace": "public"
+    },
+    "kinde_webhook_deliveries": {
+      "model": "KindeWebhookDelivery",
+      "namespace": "public"
+    },
     "members": {
       "model": "Member",
       "namespace": "public"
@@ -24,8 +32,16 @@
       "model": "Message",
       "namespace": "public"
     },
+    "reply_suggestions": {
+      "model": "ReplySuggestion",
+      "namespace": "public"
+    },
     "sources": {
       "model": "Source",
+      "namespace": "public"
+    },
+    "usage_reports": {
+      "model": "UsageReport",
       "namespace": "public"
     },
     "visitors": {
@@ -112,12 +128,50 @@
               }
             ]
           },
+          "InvitationRole": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "Support",
+                "value": "support"
+              },
+              {
+                "name": "BillingAdmin",
+                "value": "billing-admin"
+              }
+            ]
+          },
+          "InvitationStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "Pending",
+                "value": "pending"
+              },
+              {
+                "name": "Accepted",
+                "value": "accepted"
+              },
+              {
+                "name": "Revoked",
+                "value": "revoked"
+              }
+            ]
+          },
           "MemberRole": {
             "codecId": "pg/text@1",
             "members": [
               {
                 "name": "Owner",
                 "value": "owner"
+              },
+              {
+                "name": "Support",
+                "value": "support"
+              },
+              {
+                "name": "BillingAdmin",
+                "value": "billing-admin"
               }
             ]
           },
@@ -160,6 +214,23 @@
               {
                 "name": "HumanRequest",
                 "value": "human_request"
+              }
+            ]
+          },
+          "ReplySuggestionStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "Pending",
+                "value": "pending"
+              },
+              {
+                "name": "Succeeded",
+                "value": "succeeded"
+              },
+              {
+                "name": "Failed",
+                "value": "failed"
               }
             ]
           },
@@ -735,6 +806,21 @@
                   "namespace": "public"
                 }
               },
+              "replySuggestions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "conversationId"
+                  ]
+                },
+                "to": {
+                  "model": "ReplySuggestion",
+                  "namespace": "public"
+                }
+              },
               "visitor": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -808,8 +894,192 @@
               "table": "conversations"
             }
           },
+          "Invitation": {
+            "fields": {
+              "acceptedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "email": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "invitedByMemberId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "role": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "InvitationRole",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "InvitationStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "workspaceId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "invitedBy": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "invitedByMemberId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Member",
+                  "namespace": "public"
+                }
+              },
+              "workspace": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "workspaceId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Workspace",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "acceptedAt": {
+                  "column": "accepted_at"
+                },
+                "createdAt": {
+                  "column": "created_at"
+                },
+                "email": {
+                  "column": "email"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "invitedByMemberId": {
+                  "column": "invited_by_member_id"
+                },
+                "role": {
+                  "column": "role"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "workspaceId": {
+                  "column": "workspace_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "invitations"
+            }
+          },
+          "KindeWebhookDelivery": {
+            "fields": {
+              "receivedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "webhookId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "receivedAt": {
+                  "column": "received_at"
+                },
+                "type": {
+                  "column": "type"
+                },
+                "webhookId": {
+                  "column": "webhook_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "kinde_webhook_deliveries"
+            }
+          },
           "Member": {
             "fields": {
+              "accessChangedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
               "avatarKey": {
                 "nullable": true,
                 "type": {
@@ -831,10 +1101,24 @@
                   "kind": "scalar"
                 }
               },
+              "email": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "kindeUserId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -865,13 +1149,6 @@
                   "kind": "scalar"
                 }
               },
-              "userId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/uuid@1",
-                  "kind": "scalar"
-                }
-              },
               "workspaceId": {
                 "nullable": false,
                 "type": {
@@ -881,6 +1158,21 @@
               }
             },
             "relations": {
+              "invitationsSent": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "invitedByMemberId"
+                  ]
+                },
+                "to": {
+                  "model": "Invitation",
+                  "namespace": "public"
+                }
+              },
               "messages": {
                 "cardinality": "1:N",
                 "on": {
@@ -893,6 +1185,21 @@
                 },
                 "to": {
                   "model": "Message",
+                  "namespace": "public"
+                }
+              },
+              "replySuggestions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "memberId"
+                  ]
+                },
+                "to": {
+                  "model": "ReplySuggestion",
                   "namespace": "public"
                 }
               },
@@ -915,6 +1222,9 @@
             },
             "storage": {
               "fields": {
+                "accessChangedAt": {
+                  "column": "access_changed_at"
+                },
                 "avatarKey": {
                   "column": "avatar_key"
                 },
@@ -924,8 +1234,14 @@
                 "createdAt": {
                   "column": "created_at"
                 },
+                "email": {
+                  "column": "email"
+                },
                 "id": {
                   "column": "id"
+                },
+                "kindeUserId": {
+                  "column": "kinde_user_id"
                 },
                 "name": {
                   "column": "name"
@@ -935,9 +1251,6 @@
                 },
                 "updatedAt": {
                   "column": "updated_at"
-                },
-                "userId": {
-                  "column": "user_id"
                 },
                 "workspaceId": {
                   "column": "workspace_id"
@@ -1132,6 +1445,212 @@
               },
               "namespaceId": "public",
               "table": "messages"
+            }
+          },
+          "ReplySuggestion": {
+            "fields": {
+              "body": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "conversationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "error": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "finishedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "idempotencyKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "latencyMs": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "memberId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "model": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ReplySuggestionStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "tokensIn": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "tokensOut": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "workspaceId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "conversation": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "conversationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Conversation",
+                  "namespace": "public"
+                }
+              },
+              "member": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "memberId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Member",
+                  "namespace": "public"
+                }
+              },
+              "workspace": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "workspaceId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Workspace",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "body": {
+                  "column": "body"
+                },
+                "conversationId": {
+                  "column": "conversation_id"
+                },
+                "createdAt": {
+                  "column": "created_at"
+                },
+                "error": {
+                  "column": "error"
+                },
+                "finishedAt": {
+                  "column": "finished_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "idempotencyKey": {
+                  "column": "idempotency_key"
+                },
+                "latencyMs": {
+                  "column": "latency_ms"
+                },
+                "memberId": {
+                  "column": "member_id"
+                },
+                "model": {
+                  "column": "model"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "tokensIn": {
+                  "column": "tokens_in"
+                },
+                "tokensOut": {
+                  "column": "tokens_out"
+                },
+                "workspaceId": {
+                  "column": "workspace_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "reply_suggestions"
             }
           },
           "Source": {
@@ -1339,6 +1858,124 @@
               "table": "sources"
             }
           },
+          "UsageReport": {
+            "fields": {
+              "cycleEnd": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "cycleStart": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "feature": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "kindeAgreementId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "kindeRecordId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reportedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "reportedTotal": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "workspaceId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "workspace": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "workspaceId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Workspace",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "cycleEnd": {
+                  "column": "cycle_end"
+                },
+                "cycleStart": {
+                  "column": "cycle_start"
+                },
+                "feature": {
+                  "column": "feature"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "kindeAgreementId": {
+                  "column": "kinde_agreement_id"
+                },
+                "kindeRecordId": {
+                  "column": "kinde_record_id"
+                },
+                "reportedAt": {
+                  "column": "reported_at"
+                },
+                "reportedTotal": {
+                  "column": "reported_total"
+                },
+                "workspaceId": {
+                  "column": "workspace_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "usage_reports"
+            }
+          },
           "Visitor": {
             "fields": {
               "details": {
@@ -1483,6 +2120,13 @@
                   "kind": "scalar"
                 }
               },
+              "billingChangedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
               "color": {
                 "nullable": false,
                 "type": {
@@ -1514,6 +2158,20 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "kindeBillingCustomerId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "kindeOrgCode": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -1606,6 +2264,21 @@
                   "namespace": "public"
                 }
               },
+              "invitations": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "workspaceId"
+                  ]
+                },
+                "to": {
+                  "model": "Invitation",
+                  "namespace": "public"
+                }
+              },
               "members": {
                 "cardinality": "1:N",
                 "on": {
@@ -1636,6 +2309,21 @@
                   "namespace": "public"
                 }
               },
+              "replySuggestions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "workspaceId"
+                  ]
+                },
+                "to": {
+                  "model": "ReplySuggestion",
+                  "namespace": "public"
+                }
+              },
               "sources": {
                 "cardinality": "1:N",
                 "on": {
@@ -1648,6 +2336,21 @@
                 },
                 "to": {
                   "model": "Source",
+                  "namespace": "public"
+                }
+              },
+              "usageReports": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "workspaceId"
+                  ]
+                },
+                "to": {
+                  "model": "UsageReport",
                   "namespace": "public"
                 }
               },
@@ -1681,6 +2384,9 @@
                 "allowedDomains": {
                   "column": "allowed_domains"
                 },
+                "billingChangedAt": {
+                  "column": "billing_changed_at"
+                },
                 "color": {
                   "column": "color"
                 },
@@ -1692,6 +2398,12 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "kindeBillingCustomerId": {
+                  "column": "kinde_billing_customer_id"
+                },
+                "kindeOrgCode": {
+                  "column": "kinde_org_code"
                 },
                 "name": {
                   "column": "name"
@@ -2252,15 +2964,210 @@
               },
               "uniques": []
             },
+            "invitations": {
+              "checks": [
+                {
+                  "expression": "\"role\" IN ('support', 'billing-admin')",
+                  "name": "invitations_role_check_578326ec",
+                  "prefix": "invitations_role_check"
+                },
+                {
+                  "expression": "\"status\" IN ('pending', 'accepted', 'revoked')",
+                  "name": "invitations_status_check_e437b281",
+                  "prefix": "invitations_status_check"
+                }
+              ],
+              "columns": {
+                "accepted_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "created_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "email": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "invited_by_member_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "role": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "InvitationRole",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "pending"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "InvitationStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "workspace_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "workspace_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "invitations"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "workspaces"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "invited_by_member_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "invitations"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "members"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "invited_by_member_id"
+                  ],
+                  "name": "invitations_invited_by_member_id_idx_d5c987a5",
+                  "prefix": "invitations_invited_by_member_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "workspace_id",
+                    "email"
+                  ],
+                  "name": "invitations_one_pending_per_email_5bb62447",
+                  "prefix": "invitations_one_pending_per_email",
+                  "unique": true,
+                  "where": "(status = 'pending')"
+                },
+                {
+                  "columns": [
+                    "workspace_id",
+                    "created_at"
+                  ],
+                  "name": "invitations_workspace_id_created_at_idx_3f0db799",
+                  "prefix": "invitations_workspace_id_created_at_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "workspace_id"
+                  ],
+                  "name": "invitations_workspace_id_idx_90a9f461",
+                  "prefix": "invitations_workspace_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "kinde_webhook_deliveries": {
+              "columns": {
+                "received_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "webhook_id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "webhook_id"
+                ]
+              },
+              "uniques": []
+            },
             "members": {
               "checks": [
                 {
-                  "expression": "\"role\" IN ('owner')",
-                  "name": "members_role_check_389fa750",
+                  "expression": "\"role\" IN ('owner', 'support', 'billing-admin')",
+                  "name": "members_role_check_e9e55bbe",
                   "prefix": "members_role_check"
                 }
               ],
               "columns": {
+                "access_changed_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
                 "avatar_key": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -2280,9 +3187,19 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "email": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "id": {
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
+                  "nullable": false
+                },
+                "kinde_user_id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "name": {
@@ -2304,11 +3221,6 @@
                 "updated_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "nativeType": "timestamptz",
-                  "nullable": false
-                },
-                "user_id": {
-                  "codecId": "pg/uuid@1",
-                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "workspace_id": {
@@ -2354,7 +3266,7 @@
               "uniques": [
                 {
                   "columns": [
-                    "user_id"
+                    "kinde_user_id"
                   ]
                 }
               ]
@@ -2543,6 +3455,211 @@
               },
               "uniques": []
             },
+            "reply_suggestions": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('pending', 'succeeded', 'failed')",
+                  "name": "reply_suggestions_status_check_ff8e7f67",
+                  "prefix": "reply_suggestions_status_check"
+                }
+              ],
+              "columns": {
+                "body": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "conversation_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "created_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "error": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "finished_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "idempotency_key": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "latency_ms": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "member_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": true
+                },
+                "model": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "pending"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ReplySuggestionStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "tokens_in": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "tokens_out": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "workspace_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "workspace_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "reply_suggestions"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "workspaces"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "conversation_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "reply_suggestions"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "conversations"
+                  }
+                },
+                {
+                  "onDelete": "setNull",
+                  "source": {
+                    "columns": [
+                      "member_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "reply_suggestions"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "members"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "conversation_id"
+                  ],
+                  "name": "reply_suggestions_conversation_id_idx_0c3639df",
+                  "prefix": "reply_suggestions_conversation_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "member_id"
+                  ],
+                  "name": "reply_suggestions_member_id_idx_10d5a0e2",
+                  "prefix": "reply_suggestions_member_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "workspace_id"
+                  ],
+                  "name": "reply_suggestions_workspace_id_idx_90a9f461",
+                  "prefix": "reply_suggestions_workspace_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "workspace_id",
+                    "status",
+                    "created_at"
+                  ],
+                  "name": "reply_suggestions_workspace_id_status_created_at_idx_2539eff4",
+                  "prefix": "reply_suggestions_workspace_id_status_created_at_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "workspace_id",
+                    "idempotency_key"
+                  ]
+                }
+              ]
+            },
             "sources": {
               "checks": [
                 {
@@ -2716,6 +3833,105 @@
               },
               "uniques": []
             },
+            "usage_reports": {
+              "columns": {
+                "cycle_end": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "cycle_start": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "feature": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "kinde_agreement_id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "kinde_record_id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "reported_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "reported_total": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "workspace_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "workspace_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "usage_reports"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "workspaces"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "workspace_id",
+                    "kinde_agreement_id",
+                    "cycle_start",
+                    "reported_at"
+                  ],
+                  "name": "usage_reports_latest_ccf351e8",
+                  "prefix": "usage_reports_latest",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "workspace_id"
+                  ],
+                  "name": "usage_reports_workspace_id_idx_90a9f461",
+                  "prefix": "usage_reports_workspace_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "visitors": {
               "columns": {
                 "details": {
@@ -2861,6 +4077,15 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "billing_changed_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
                 "color": {
                   "codecId": "pg/text@1",
                   "default": {
@@ -2893,6 +4118,16 @@
                 "id": {
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
+                  "nullable": false
+                },
+                "kinde_billing_customer_id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "kinde_org_code": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "name": {
@@ -2943,7 +4178,18 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "kinde_org_code"
+                  ]
+                },
+                {
+                  "columns": [
+                    "kinde_billing_customer_id"
+                  ]
+                }
+              ]
             }
           },
           "valueSet": {
@@ -2976,10 +4222,27 @@
                 "agent_off"
               ]
             },
+            "InvitationRole": {
+              "kind": "valueSet",
+              "values": [
+                "support",
+                "billing-admin"
+              ]
+            },
+            "InvitationStatus": {
+              "kind": "valueSet",
+              "values": [
+                "pending",
+                "accepted",
+                "revoked"
+              ]
+            },
             "MemberRole": {
               "kind": "valueSet",
               "values": [
-                "owner"
+                "owner",
+                "support",
+                "billing-admin"
               ]
             },
             "MessageAuthor": {
@@ -2998,6 +4261,14 @@
                 "small_talk",
                 "off_topic",
                 "human_request"
+              ]
+            },
+            "ReplySuggestionStatus": {
+              "kind": "valueSet",
+              "values": [
+                "pending",
+                "succeeded",
+                "failed"
               ]
             },
             "SourceKind": {
@@ -3041,10 +4312,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "b759717b02b8c792c5847b3548a557441861ec4a6ba83f65a527fd9c1ec8adc5"
+    "storageHash": "5922401357cdcf861539d9441fc8139fc4e8dee3633eb8ec1eed2acacce86473"
   },
   "execution": {
-    "executionHash": "f1cc9245eee4638fa57868dd1a831c5556a9ec6eb896bed3399eae1277902c12",
+    "executionHash": "2592f8c2ecc4b146e34d403f01b2242a5c8d74d4732883bd73c7c758eb61f4a5",
     "mutations": {
       "defaults": [
         {
@@ -3076,6 +4347,17 @@
           },
           "ref": {
             "entry": "conversations",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "invitations",
             "field": "id",
             "namespace": "public"
           }
@@ -3123,7 +4405,29 @@
             "kind": "generator"
           },
           "ref": {
+            "entry": "reply_suggestions",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
             "entry": "sources",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "usage_reports",
             "field": "id",
             "namespace": "public"
           }

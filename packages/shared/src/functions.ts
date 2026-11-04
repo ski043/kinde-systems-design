@@ -9,6 +9,7 @@ export const FUNCTION_ROUTES = {
   suggestedQuestions: "/suggested-questions",
   sourceUploadedTrigger: "/triggers/source-uploaded",
   autoCloseTrigger: "/triggers/auto-close",
+  reconcileUsageTrigger: "/triggers/reconcile-usage",
 } as const;
 
 export const textIngestRequestSchema = z.object({
