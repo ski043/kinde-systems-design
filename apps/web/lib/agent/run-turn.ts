@@ -44,6 +44,7 @@ import {
   type Persona,
 } from "./prompts";
 import { retrieveKnowledge } from "./retrieve";
+import { assertNormalFinish, nonEmptyReply } from "./stream-checks";
 import { ChunkPublisher } from "./stream-publisher";
 
 const FIRST_OUTPUT_TIMEOUT_MS = 20_000;
@@ -305,12 +306,7 @@ class AgentTurn {
           cannotAnswer = true;
         } else if (part.type === "finish") {
           usage = part.totalUsage;
-          if (
-            part.finishReason !== "stop" &&
-            part.finishReason !== "tool-calls"
-          ) {
-            throw new Error(`The reply ended early (${part.finishReason})`);
-          }
+          assertNormalFinish(part.finishReason, ["stop", "tool-calls"]);
         } else if (part.type === "error") {
           throw part.error;
         } else if (part.type === "abort") {
@@ -332,9 +328,7 @@ class AgentTurn {
 
     if (obsolete) return { kind: "obsolete" };
     if (cannotAnswer) return { kind: "cannot_answer" };
-    const body = text.trim();
-    if (body === "") throw new Error("The model returned an empty reply");
-    return { kind: "text", text: body };
+    return { kind: "text", text: nonEmptyReply(text) };
   }
 
   async finish(): Promise<void> {

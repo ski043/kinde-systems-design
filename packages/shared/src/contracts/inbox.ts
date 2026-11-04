@@ -1,12 +1,20 @@
-import { oc } from "@orpc/contract";
+import { eventIterator, oc } from "@orpc/contract";
 import { openapi } from "@orpc/openapi";
 import * as z from "zod";
-import { conversationErrors, ownerErrors } from "../errors";
+import {
+  conversationErrors,
+  permissionErrors,
+  suggestReplyErrors,
+} from "../errors";
 import {
   conversationDetailSchema,
   conversationSummarySchema,
   messageBodySchema,
 } from "../schemas/conversation";
+import {
+  replySuggestionEventSchema,
+  suggestReplyInputSchema,
+} from "../schemas/reply-suggestion";
 
 export {
   conversationDetailSchema,
@@ -33,7 +41,7 @@ function conversationAction(path: string, summary: string) {
 
 export const inboxContract = {
   list: oc
-    .errors(ownerErrors)
+    .errors(permissionErrors)
     .meta(
       openapi({
         method: "GET",
@@ -82,4 +90,18 @@ export const inboxContract = {
   markRead: conversationAction("read", "Mark a conversation as read").errors(
     conversationErrors,
   ),
+  suggestReply: oc
+    .errors(suggestReplyErrors)
+    .meta(
+      openapi({
+        method: "POST",
+        path: "/conversations/{conversationId}/reply-suggestions",
+        summary: "Stream a reply suggestion for an open conversation",
+        description:
+          "Streams the draft to the calling member only, as server-sent events. Only a finished draft counts toward the plan's allowance. Retrying with the same `idempotencyKey` returns the finished draft again without counting it twice.",
+        tags: ["Inbox"],
+      }),
+    )
+    .input(suggestReplyInputSchema)
+    .output(eventIterator(replySuggestionEventSchema)),
 };
