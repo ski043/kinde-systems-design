@@ -1,10 +1,11 @@
 "use client";
 
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth/client";
-import { dashboard, signIn } from "./content";
+import { kindeRoutes } from "@/lib/kinde/urls";
+import { dashboard, signInLabel } from "./content";
 
 export function AccountButton({
   className,
@@ -15,10 +16,9 @@ export function AccountButton({
   style?: CSSProperties;
   onNavigate?: () => void;
 }) {
-  const { data: session, isPending } = authClient.useSession();
-  if (isPending) return null;
+  const { isAuthenticated, isLoading } = useKindeBrowserClient();
+  if (isLoading) return null;
 
-  const link = session ? dashboard : signIn;
   return (
     <Button
       variant="ink"
@@ -26,9 +26,15 @@ export function AccountButton({
       className={className}
       style={style}
       nativeButton={false}
-      render={<Link href={link.href} onClick={onNavigate} />}
+      render={
+        isAuthenticated ? (
+          <Link href={dashboard.href} onClick={onNavigate} />
+        ) : (
+          <a href={kindeRoutes.login} onClick={onNavigate} />
+        )
+      }
     >
-      {link.label}
+      {isAuthenticated ? dashboard.label : signInLabel}
     </Button>
   );
 }

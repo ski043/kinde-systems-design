@@ -13,8 +13,10 @@ import {
   isAgentAvatarMimeType,
   presignAgentAvatarUpload,
 } from "@/lib/storage/agent-avatar";
-import { ownerProcedure } from "../procedures";
+import { memberProcedure, requirePermission } from "../procedures";
 import { loadSavedWidgetSettings } from "./widget-settings";
+
+const manageWidget = memberProcedure.use(requirePermission("widget:manage"));
 
 const TOO_LARGE_MESSAGE = `Use an image under ${AGENT_AVATAR_MAX_BYTES / (1024 * 1024)} MB.`;
 const WRONG_TYPE_MESSAGE = "Use a PNG, JPEG, WebP or GIF image.";
@@ -34,7 +36,7 @@ async function swapAvatarKey(
 }
 
 export const createAvatarUpload =
-  ownerProcedure.widgetSettings.createAvatarUpload.handler(
+  manageWidget.widgetSettings.createAvatarUpload.handler(
     ({ context, input }) => {
       if (!isAgentAvatarMimeType(input.contentType)) {
         throw new AvatarRejectedError({ message: WRONG_TYPE_MESSAGE });
@@ -51,7 +53,7 @@ export const createAvatarUpload =
   );
 
 export const confirmAvatarUpload =
-  ownerProcedure.widgetSettings.confirmAvatarUpload.handler(
+  manageWidget.widgetSettings.confirmAvatarUpload.handler(
     async ({ context, input }) => {
       const { key } = input;
       if (!isAgentAvatarKey(context.workspaceId, key)) {
@@ -76,7 +78,7 @@ export const confirmAvatarUpload =
     },
   );
 
-export const removeAvatar = ownerProcedure.widgetSettings.removeAvatar.handler(
+export const removeAvatar = manageWidget.widgetSettings.removeAvatar.handler(
   async ({ context }) => {
     await swapAvatarKey(context.workspaceId, null);
     return loadSavedWidgetSettings(context.workspaceId);

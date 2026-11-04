@@ -9,7 +9,7 @@ import { router } from "@/lib/orpc/router";
 // The agent's pipeline runs in after() and shares this limit.
 export const maxDuration = 300;
 
-// Mounted under /api/v1 so it never shadows Neon Auth's /api/auth proxy.
+// Mounted under /api/v1 so it never shadows Kinde's /api/auth routes.
 const prefix = "/api/v1";
 
 const errorStatusMap = { ...COMMON_ERROR_STATUS_MAP, ...ERROR_STATUS };

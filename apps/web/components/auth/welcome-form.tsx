@@ -8,7 +8,6 @@ import {
 import { isDefinedError } from "@orpc/client";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,15 +18,12 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth/client";
+import { kindeRoutes } from "@/lib/kinde/urls";
 import { orpc } from "@/lib/orpc/client";
-import { routes } from "@/lib/routes";
-import { authRequest } from "./auth-error";
 import { AuthHeading, FormAlert, SubmitButton } from "./auth-ui";
 
 export function WelcomeForm() {
   const router = useRouter();
-  const [signingOut, setSigningOut] = useState(false);
   const form = useForm<CreateWorkspaceInput>({
     resolver: zodResolver(createWorkspaceSchema),
     defaultValues: { name: "" },
@@ -36,12 +32,10 @@ export function WelcomeForm() {
 
   const createWorkspace = useMutation(
     orpc.workspace.create.mutationOptions({
-      onSuccess: () => {
-        router.replace(routes.dashboard);
-        router.refresh();
-      },
+      // Signing in again puts the new workspace in the session.
+      onSuccess: ({ continueUrl }) => window.location.assign(continueUrl),
       onError: (error) => {
-        // The page gate sends a signed-out or unverified owner to the right place.
+        // The page gate sends a signed-out person to the right place.
         if (isDefinedError(error)) router.refresh();
       },
     }),
@@ -54,13 +48,6 @@ export function WelcomeForm() {
     createWorkspace.error && !isDefinedError(createWorkspace.error)
       ? "We couldn't save that. Check your connection and try again."
       : null;
-
-  async function signOut() {
-    setSigningOut(true);
-    await authRequest(() => authClient.signOut());
-    router.replace(routes.signIn);
-    router.refresh();
-  }
 
   return (
     <form className="flex flex-col gap-6" onSubmit={onSubmit} noValidate>
@@ -89,11 +76,10 @@ export function WelcomeForm() {
         <FieldDescription className="text-center">
           Not you?{" "}
           <Button
-            type="button"
             variant="link"
             className="h-auto p-0 text-sm font-normal text-foreground underline"
-            disabled={signingOut || pending}
-            onClick={signOut}
+            nativeButton={false}
+            render={<a href={kindeRoutes.logout} />}
           >
             Sign out
           </Button>

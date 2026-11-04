@@ -29,7 +29,11 @@ import {
   toSource,
 } from "@/lib/knowledge/publish";
 import { deleteUploadQuietly, presignUpload } from "@/lib/storage/uploads";
-import { ownerProcedure } from "../procedures";
+import { memberProcedure, requirePermission } from "../procedures";
+
+const manageKnowledge = memberProcedure.use(
+  requirePermission("knowledge:manage"),
+);
 
 const INGEST_START_FAILED =
   "We couldn't start processing this source. Try saving it again.";
@@ -54,20 +58,22 @@ function ingestTextAfterResponse(
   });
 }
 
-export const get = ownerProcedure.knowledge.get.handler(async ({ context }) => {
-  const [sources, suggestedQuestions, knowledge] = await Promise.all([
-    listSources(context.workspaceId),
-    getSuggestedQuestions(context.workspaceId),
-    hasKnowledge(context.workspaceId),
-  ]);
-  return {
-    sources: sources.map(toSource),
-    suggestedQuestions,
-    hasKnowledge: knowledge,
-  };
-});
+export const get = manageKnowledge.knowledge.get.handler(
+  async ({ context }) => {
+    const [sources, suggestedQuestions, knowledge] = await Promise.all([
+      listSources(context.workspaceId),
+      getSuggestedQuestions(context.workspaceId),
+      hasKnowledge(context.workspaceId),
+    ]);
+    return {
+      sources: sources.map(toSource),
+      suggestedQuestions,
+      hasKnowledge: knowledge,
+    };
+  },
+);
 
-export const getSource = ownerProcedure.knowledge.getSource.handler(
+export const getSource = manageKnowledge.knowledge.getSource.handler(
   async ({ context, input, errors }) => {
     const record = await getSourceRecord(context.workspaceId, input.id);
     if (!record) {
@@ -77,7 +83,7 @@ export const getSource = ownerProcedure.knowledge.getSource.handler(
   },
 );
 
-export const createUpload = ownerProcedure.knowledge.createUpload.handler(
+export const createUpload = manageKnowledge.knowledge.createUpload.handler(
   async ({ context, input }) => {
     const extension = sourceFileExtension(input.name);
     if (!extension) {
@@ -101,7 +107,7 @@ export const createUpload = ownerProcedure.knowledge.createUpload.handler(
   },
 );
 
-export const createText = ownerProcedure.knowledge.createText.handler(
+export const createText = manageKnowledge.knowledge.createText.handler(
   async ({ context, input }) => {
     const save = await createTextSource(context.workspaceId, input);
     const source = toSource(save.source);
@@ -111,7 +117,7 @@ export const createText = ownerProcedure.knowledge.createText.handler(
   },
 );
 
-export const updateText = ownerProcedure.knowledge.updateText.handler(
+export const updateText = manageKnowledge.knowledge.updateText.handler(
   async ({ context, input, errors }) => {
     const save = await updateTextSource(context.workspaceId, input.id, {
       title: input.title,
@@ -127,7 +133,7 @@ export const updateText = ownerProcedure.knowledge.updateText.handler(
   },
 );
 
-export const deleteSource = ownerProcedure.knowledge.deleteSource.handler(
+export const deleteSource = manageKnowledge.knowledge.deleteSource.handler(
   async ({ context, input, errors }) => {
     const deleted = await deleteSourceRecord(context.workspaceId, input.id);
     if (!deleted) {
@@ -142,7 +148,7 @@ export const deleteSource = ownerProcedure.knowledge.deleteSource.handler(
   },
 );
 
-export const abandonUpload = ownerProcedure.knowledge.abandonUpload.handler(
+export const abandonUpload = manageKnowledge.knowledge.abandonUpload.handler(
   async ({ context, input }) => {
     const deleted = await deleteAbandonedUpload(
       context.workspaceId,
@@ -160,7 +166,7 @@ export const abandonUpload = ownerProcedure.knowledge.abandonUpload.handler(
   },
 );
 
-export const listChunks = ownerProcedure.knowledge.listChunks.handler(
+export const listChunks = manageKnowledge.knowledge.listChunks.handler(
   async ({ context, input, errors }) => {
     const source = await getSourceRecord(context.workspaceId, input.id);
     if (!source) {

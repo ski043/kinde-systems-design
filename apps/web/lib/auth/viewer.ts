@@ -1,23 +1,54 @@
 import "server-only";
-import type { CurrentOwner } from "@marshaldesk/shared";
+import { findMembershipByKindeUserId } from "@marshaldesk/db";
+import type { CurrentMembership } from "@marshaldesk/shared";
 import { isDefinedError, safe } from "@orpc/client";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import { auth } from "@/lib/auth/server";
+import { getKindeSession } from "@/lib/kinde/session";
+import { kindeRoutes, signInToOrganizationUrl } from "@/lib/kinde/urls";
 import { serverClient } from "@/lib/orpc/server";
-import { routes, verifyEmailRoute } from "@/lib/routes";
+import { routes } from "@/lib/routes";
 
 export type Viewer =
   | { status: "signed-out" }
-  | { status: "unverified"; email: string }
+  /**
+   * Has a workspace, but the session's organization is another one (such as
+   * Kinde's default organization), or they just joined through an invitation.
+   */
+  | { status: "wrong-workspace"; signInUrl: string }
   | { status: "needs-workspace" }
-  | { status: "ready"; current: CurrentOwner };
+  | { status: "ready"; current: CurrentMembership };
 
 export type ViewerStatus = Viewer["status"];
 
-/** Resolves who is looking at the page, once per request, through `owner.getCurrent`. */
+async function viewerWithoutWorkspace(): Promise<Viewer> {
+  const session = await getKindeSession();
+  if (!session) return { status: "signed-out" };
+  const membership = await findMembershipByKindeUserId(session.kindeUserId);
+  if (membership) {
+    return {
+      status: "wrong-workspace",
+      signInUrl: signInToOrganizationUrl(membership.workspace.kindeOrgCode),
+    };
+  }
+
+  const [error, joined] = await safe(serverClient.workspace.acceptInvitation());
+  if (!error) {
+    return { status: "wrong-workspace", signInUrl: joined.continueUrl };
+  }
+  if (isDefinedError(error) && error.code === "NOT_FOUND") {
+    return { status: "needs-workspace" };
+  }
+  throw error;
+}
+
+/**
+ * Resolves who is looking at the page, once per request, through
+ * `member.getCurrent`. A person without a workspace whose verified email has a
+ * pending invitation joins that workspace here.
+ */
 export const getViewer = cache(async (): Promise<Viewer> => {
-  const [error, current] = await safe(serverClient.owner.getCurrent());
+  const [error, current] = await safe(serverClient.member.getCurrent());
   if (!error) {
     return { status: "ready", current };
   }
@@ -28,14 +59,8 @@ export const getViewer = cache(async (): Promise<Viewer> => {
   switch (error.code) {
     case "UNAUTHORIZED":
       return { status: "signed-out" };
-    case "EMAIL_NOT_VERIFIED": {
-      const { data } = await auth.getSession();
-      return data?.user
-        ? { status: "unverified", email: data.user.email }
-        : { status: "signed-out" };
-    }
     case "WORKSPACE_REQUIRED":
-      return { status: "needs-workspace" };
+      return viewerWithoutWorkspace();
     default: {
       const unhandled: never = error;
       throw new Error(`Unhandled viewer error: ${JSON.stringify(unhandled)}`);
@@ -46,9 +71,9 @@ export const getViewer = cache(async (): Promise<Viewer> => {
 function destinationFor(viewer: Viewer): string {
   switch (viewer.status) {
     case "signed-out":
-      return routes.signIn;
-    case "unverified":
-      return verifyEmailRoute(viewer.email);
+      return kindeRoutes.login;
+    case "wrong-workspace":
+      return viewer.signInUrl;
     case "needs-workspace":
       return routes.welcome;
     case "ready":

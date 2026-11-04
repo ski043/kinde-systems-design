@@ -1,7 +1,7 @@
 import { oc } from "@orpc/contract";
 import { openapi } from "@orpc/openapi";
 import * as z from "zod";
-import { ownerErrors, sourceErrors } from "../errors";
+import { permissionErrors, sourceErrors } from "../errors";
 import {
   chunkPreviewSchema,
   createSourceUploadSchema,
@@ -16,7 +16,7 @@ const sourceIdInput = z.object({ id: z.string().uuid() });
 
 export const knowledgeContract = {
   get: oc
-    .errors(ownerErrors)
+    .errors(permissionErrors)
     .meta(
       openapi({
         method: "GET",
@@ -40,7 +40,7 @@ export const knowledgeContract = {
     .input(sourceIdInput)
     .output(sourceDetailSchema),
   createUpload: oc
-    .errors(ownerErrors)
+    .errors(permissionErrors)
     .meta(
       openapi({
         method: "POST",
@@ -54,7 +54,7 @@ export const knowledgeContract = {
     .input(createSourceUploadSchema)
     .output(sourceUploadSchema),
   createText: oc
-    .errors(ownerErrors)
+    .errors(permissionErrors)
     .meta(
       openapi({
         method: "POST",
@@ -92,7 +92,7 @@ export const knowledgeContract = {
     .input(sourceIdInput)
     .output(z.object({ id: z.string() })),
   abandonUpload: oc
-    .errors(ownerErrors)
+    .errors(permissionErrors)
     .meta(
       openapi({
         method: "POST",

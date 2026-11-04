@@ -30,17 +30,6 @@ export function FormAlert({ message }: { message: string | null }) {
   );
 }
 
-export function FormNote({ children }: { children: ReactNode }) {
-  return (
-    <p
-      role="status"
-      className="rounded-lg bg-ink px-4 py-2.5 text-center text-sm text-ink-foreground"
-    >
-      {children}
-    </p>
-  );
-}
-
 export function SubmitButton({
   pending,
   children,

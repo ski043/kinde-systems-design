@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { kindeRoutes } from "@/lib/kinde/urls";
 import { hero } from "./content";
 import { TrustRow } from "./trust-row";
 
@@ -31,9 +31,9 @@ export function Hero() {
         size="cta"
         className="animate-reveal-pulse [animation-delay:0.4s] motion-reduce:animate-none"
         nativeButton={false}
-        render={<Link href={hero.cta.href} />}
+        render={<a href={kindeRoutes.register} />}
       >
-        {hero.cta.label}
+        {hero.ctaLabel}
       </Button>
     </section>
   );

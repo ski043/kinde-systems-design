@@ -11,7 +11,9 @@ import {
   WorkspaceRequiredError,
 } from "@marshaldesk/shared";
 import { profileImageUrl } from "@/lib/storage/public-url";
-import { ownerProcedure } from "../procedures";
+import { memberProcedure, requirePermission } from "../procedures";
+
+const manageWidget = memberProcedure.use(requirePermission("widget:manage"));
 
 export function toSavedWidgetSettings(
   record: WidgetSettingsRecord,
@@ -41,11 +43,11 @@ export async function loadSavedWidgetSettings(
   return toSavedWidgetSettings(record);
 }
 
-export const getSettings = ownerProcedure.widgetSettings.get.handler(
+export const getSettings = manageWidget.widgetSettings.get.handler(
   ({ context }) => loadSavedWidgetSettings(context.workspaceId),
 );
 
-export const updateSettings = ownerProcedure.widgetSettings.update.handler(
+export const updateSettings = manageWidget.widgetSettings.update.handler(
   async ({ context, input }) => {
     const record = await updateWidgetSettings(context.workspaceId, {
       ...input,

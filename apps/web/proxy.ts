@@ -1,13 +1,9 @@
 import { getWidgetAllowedDomains } from "@marshaldesk/db";
+import { withAuth } from "@kinde-oss/kinde-auth-nextjs/middleware";
 import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth/server";
-import { routes } from "@/lib/routes";
 import { DEVELOPMENT_HOSTS } from "@/lib/visitor/development-hosts";
 
-const SESSION_VERIFIER_PARAM = "neon_auth_session_verifier";
 const WIDGET_PATH = /^\/widget\/([^/]+)/;
-
-const neonAuthProxy = auth.middleware({ loginUrl: routes.signIn });
 
 function frameAncestors(allowedDomains: readonly string[] | null): string {
   const hosts = allowedDomains
@@ -37,31 +33,31 @@ async function widgetProxy(workspaceId: string): Promise<NextResponse> {
   return response;
 }
 
-// Fast signed-in check. Verification and workspace gates live in the layouts
-// and `ownerProcedure`. The SDK redirects every matched path without a session,
-// so the matcher lists only protected routes, plus the home page when Neon
-// returns there with a session verifier after Google or a magic link (it drops
-// our callbackURL while the branch has no trusted origins).
+const RPC_PATH = "/rpc";
+
+// Set by the Kinde SDK at sign-in. Widget visitors never have one.
+const KINDE_REFRESH_COOKIE = "refresh_token";
+
+// Kinde sends signed-out requests to its hosted login and refreshes
+// near-expiry tokens. Workspace and permission gates live in the layouts and
+// the oRPC procedures. The matcher lists only protected pages, the widget, and
+// the RPC endpoint.
 export default async function proxy(request: NextRequest) {
-  const widget = request.nextUrl.pathname.match(WIDGET_PATH);
+  const { pathname } = request.nextUrl;
+  const widget = pathname.match(WIDGET_PATH);
   if (widget?.[1]) {
     return widgetProxy(widget[1]);
   }
-
-  const response = await neonAuthProxy(request);
-  const location = response.headers.get("location");
-  const exchangedOnHome =
-    request.nextUrl.pathname === routes.home &&
-    request.nextUrl.searchParams.has(SESSION_VERIFIER_PARAM) &&
-    location !== null &&
-    new URL(location, request.url).pathname === routes.home;
-  if (exchangedOnHome) {
-    response.headers.set(
-      "location",
-      new URL(routes.dashboard, request.url).toString(),
-    );
+  if (pathname === RPC_PATH || pathname.startsWith(`${RPC_PATH}/`)) {
+    // A dashboard tab calls RPCs for hours without navigating, so the access
+    // token is refreshed here too. As a public path, a missing or unrefreshable
+    // session passes through and the procedures answer with a typed UNAUTHORIZED.
+    if (!request.cookies.has(KINDE_REFRESH_COOKIE)) {
+      return NextResponse.next();
+    }
+    return withAuth(request, { publicPaths: [RPC_PATH] });
   }
-  return response;
+  return withAuth(request, { isReturnToCurrentPage: true });
 }
 
 export const config = {
@@ -69,9 +65,6 @@ export const config = {
     "/dashboard/:path*",
     "/auth/welcome",
     "/widget/:path*",
-    {
-      source: "/",
-      has: [{ type: "query", key: "neon_auth_session_verifier" }],
-    },
+    "/rpc/:path*",
   ],
 };

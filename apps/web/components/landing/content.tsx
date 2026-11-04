@@ -20,7 +20,7 @@ export const navLinks: NavLink[] = [
   { label: "Contact", href: "#contact" },
 ];
 
-export const signIn: NavLink = { label: "Sign in", href: "/auth/sign-in" };
+export const signInLabel = "Sign in";
 
 export const dashboard: NavLink = { label: "Dashboard", href: "/dashboard" };
 
@@ -37,7 +37,7 @@ export const hero = {
   headline: ["Stop answering", "the same questions"],
   subhead:
     "Your agent answers visitors from your knowledge base around the clock, and only brings you in when it isn't sure.",
-  cta: { label: "Get started", href: "/auth/sign-up" },
+  ctaLabel: "Get started",
 };
 
 export const authShowcase = {

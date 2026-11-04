@@ -1,0 +1,27 @@
+import * as z from "zod";
+
+/** Permission keys defined in Kinde. Procedures check these, never role names. */
+export const PERMISSIONS = [
+  "conversations:read",
+  "conversations:reply",
+  "suggestions:create",
+  "knowledge:manage",
+  "widget:manage",
+  "members:manage",
+  "billing:manage",
+] as const;
+
+export const permissionSchema = z.enum(PERMISSIONS);
+export type Permission = z.infer<typeof permissionSchema>;
+
+/** Role keys defined in Kinde. `members.role` stores a display copy. */
+export const MEMBER_ROLES = ["owner", "support", "billing-admin"] as const;
+
+export const memberRoleSchema = z.enum(MEMBER_ROLES);
+export type MemberRole = z.infer<typeof memberRoleSchema>;
+
+/** Roles an owner can give by invitation or role change. There is exactly one owner. */
+export const ASSIGNABLE_ROLES = ["support", "billing-admin"] as const;
+
+export const assignableRoleSchema = z.enum(ASSIGNABLE_ROLES);
+export type AssignableRole = z.infer<typeof assignableRoleSchema>;

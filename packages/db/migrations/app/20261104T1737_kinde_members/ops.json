@@ -1,0 +1,1148 @@
+[
+  {
+    "id": "dropCheckConstraint.members.members_role_check_389fa750",
+    "label": "Drop check constraint \"members_role_check_389fa750\" on \"members\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "members_role_check_389fa750",
+        "table": "members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"members_role_check_389fa750\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "members_role_check_389fa750",
+          "public",
+          "\"public\".\"members\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"members_role_check_389fa750\"",
+        "sql": "ALTER TABLE \"public\".\"members\" DROP CONSTRAINT \"members_role_check_389fa750\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"members_role_check_389fa750\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "members_role_check_389fa750",
+          "public",
+          "\"public\".\"members\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropConstraint.members.members_user_id_key",
+    "label": "Drop constraint \"members_user_id_key\" on \"members\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "members_user_id_key",
+        "table": "members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"members_user_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "members_user_id_key",
+          "public",
+          "\"public\".\"members\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"members_user_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"members\" DROP CONSTRAINT \"members_user_id_key\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"members_user_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "members_user_id_key",
+          "public",
+          "\"public\".\"members\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.members.user_id",
+    "label": "Drop column \"user_id\" from \"members\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "user_id",
+        "table": "members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"user_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "members",
+          "user_id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"user_id\"",
+        "sql": "ALTER TABLE \"public\".\"members\" DROP COLUMN \"user_id\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"user_id\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "members",
+          "user_id"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.invitations",
+    "label": "Create table \"invitations\"",
+    "summary": "Creates table \"invitations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "invitations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"invitations\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invitations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"invitations\"",
+        "sql": "CREATE TABLE \"public\".\"invitations\" (\n  \"accepted_at\" timestamptz,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"invited_by_member_id\" uuid NOT NULL,\n  \"role\" text NOT NULL,\n  \"status\" text DEFAULT 'pending' NOT NULL,\n  \"workspace_id\" uuid NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"invitations_role_check_578326ec\" CHECK (\"role\" IN ('support', 'billing-admin')),\n  CONSTRAINT \"invitations_status_check_e437b281\" CHECK (\"status\" IN ('pending', 'accepted', 'revoked'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"invitations\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invitations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.reply_suggestions",
+    "label": "Create table \"reply_suggestions\"",
+    "summary": "Creates table \"reply_suggestions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "reply_suggestions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"reply_suggestions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"reply_suggestions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"reply_suggestions\"",
+        "sql": "CREATE TABLE \"public\".\"reply_suggestions\" (\n  \"body\" text,\n  \"conversation_id\" uuid NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"error\" text,\n  \"finished_at\" timestamptz,\n  \"id\" uuid NOT NULL,\n  \"idempotency_key\" text NOT NULL,\n  \"latency_ms\" int4,\n  \"member_id\" uuid,\n  \"model\" text NOT NULL,\n  \"status\" text DEFAULT 'pending' NOT NULL,\n  \"tokens_in\" int4 DEFAULT 0 NOT NULL,\n  \"tokens_out\" int4 DEFAULT 0 NOT NULL,\n  \"workspace_id\" uuid NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"reply_suggestions_status_check_ff8e7f67\" CHECK (\"status\" IN ('pending', 'succeeded', 'failed'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"reply_suggestions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"reply_suggestions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.members.access_changed_at",
+    "label": "Add column \"access_changed_at\" to \"members\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "access_changed_at",
+        "table": "members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"access_changed_at\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "members",
+          "access_changed_at"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"access_changed_at\"",
+        "sql": "ALTER TABLE \"public\".\"members\" ADD COLUMN \"access_changed_at\" timestamptz DEFAULT (now()) NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"access_changed_at\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "members",
+          "access_changed_at"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.workspaces.plan",
+    "label": "Add column \"plan\" to \"workspaces\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "plan",
+        "table": "workspaces"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"plan\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "workspaces",
+          "plan"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"plan\"",
+        "sql": "ALTER TABLE \"public\".\"workspaces\" ADD COLUMN \"plan\" text DEFAULT 'free' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"plan\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "workspaces",
+          "plan"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.members.email",
+    "label": "Add column \"email\" to \"members\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "email",
+        "table": "members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"email\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "members",
+          "email"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"email\"",
+        "sql": "ALTER TABLE \"public\".\"members\" ADD COLUMN \"email\" text NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"email\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "members",
+          "email"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.members.kinde_user_id",
+    "label": "Add column \"kinde_user_id\" to \"members\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "kinde_user_id",
+        "table": "members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"kinde_user_id\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "members",
+          "kinde_user_id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"kinde_user_id\"",
+        "sql": "ALTER TABLE \"public\".\"members\" ADD COLUMN \"kinde_user_id\" text NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"kinde_user_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "members",
+          "kinde_user_id"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.workspaces.kinde_org_code",
+    "label": "Add column \"kinde_org_code\" to \"workspaces\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "kinde_org_code",
+        "table": "workspaces"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"kinde_org_code\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "workspaces",
+          "kinde_org_code"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"kinde_org_code\"",
+        "sql": "ALTER TABLE \"public\".\"workspaces\" ADD COLUMN \"kinde_org_code\" text NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"kinde_org_code\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "workspaces",
+          "kinde_org_code"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.members.members_role_check_e9e55bbe",
+    "label": "Add check constraint \"members_role_check_e9e55bbe\" on \"members\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "members_role_check_e9e55bbe",
+        "table": "members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"members_role_check_e9e55bbe\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "members_role_check_e9e55bbe",
+          "public",
+          "\"public\".\"members\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"members_role_check_e9e55bbe\"",
+        "sql": "ALTER TABLE \"public\".\"members\" ADD CONSTRAINT \"members_role_check_e9e55bbe\" CHECK (\"role\" IN ('owner', 'support', 'billing-admin'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"members_role_check_e9e55bbe\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "members_role_check_e9e55bbe",
+          "public",
+          "\"public\".\"members\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.members.members_kinde_user_id_key",
+    "label": "Add unique constraint on \"members\" (kinde_user_id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "members_kinde_user_id_key",
+        "table": "members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"members_kinde_user_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "members_kinde_user_id_key",
+          "public",
+          "\"public\".\"members\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"members_kinde_user_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"members\" ADD CONSTRAINT \"members_kinde_user_id_key\" UNIQUE (\"kinde_user_id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"members_kinde_user_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "members_kinde_user_id_key",
+          "public",
+          "\"public\".\"members\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.reply_suggestions.reply_suggestions_workspace_id_idempotency_key_key",
+    "label": "Add unique constraint on \"reply_suggestions\" (workspace_id, idempotency_key)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "reply_suggestions_workspace_id_idempotency_key_key",
+        "table": "reply_suggestions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"reply_suggestions_workspace_id_idempotency_key_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "reply_suggestions_workspace_id_idempotency_key_key",
+          "public",
+          "\"public\".\"reply_suggestions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"reply_suggestions_workspace_id_idempotency_key_key\"",
+        "sql": "ALTER TABLE \"public\".\"reply_suggestions\" ADD CONSTRAINT \"reply_suggestions_workspace_id_idempotency_key_key\" UNIQUE (\"workspace_id\", \"idempotency_key\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"reply_suggestions_workspace_id_idempotency_key_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "reply_suggestions_workspace_id_idempotency_key_key",
+          "public",
+          "\"public\".\"reply_suggestions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.workspaces.workspaces_plan_check_fe6aa8d0",
+    "label": "Add check constraint \"workspaces_plan_check_fe6aa8d0\" on \"workspaces\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "workspaces_plan_check_fe6aa8d0",
+        "table": "workspaces"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"workspaces_plan_check_fe6aa8d0\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workspaces_plan_check_fe6aa8d0",
+          "public",
+          "\"public\".\"workspaces\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"workspaces_plan_check_fe6aa8d0\"",
+        "sql": "ALTER TABLE \"public\".\"workspaces\" ADD CONSTRAINT \"workspaces_plan_check_fe6aa8d0\" CHECK (\"plan\" IN ('free', 'pro'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"workspaces_plan_check_fe6aa8d0\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workspaces_plan_check_fe6aa8d0",
+          "public",
+          "\"public\".\"workspaces\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.workspaces.workspaces_kinde_org_code_key",
+    "label": "Add unique constraint on \"workspaces\" (kinde_org_code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "workspaces_kinde_org_code_key",
+        "table": "workspaces"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"workspaces_kinde_org_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workspaces_kinde_org_code_key",
+          "public",
+          "\"public\".\"workspaces\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"workspaces_kinde_org_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"workspaces\" ADD CONSTRAINT \"workspaces_kinde_org_code_key\" UNIQUE (\"kinde_org_code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"workspaces_kinde_org_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workspaces_kinde_org_code_key",
+          "public",
+          "\"public\".\"workspaces\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invitations.invitations_invited_by_member_id_idx_d5c987a5",
+    "label": "Create index \"invitations_invited_by_member_id_idx_d5c987a5\" on \"invitations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invitations_invited_by_member_id_idx_d5c987a5",
+        "table": "invitations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invitations_invited_by_member_id_idx_d5c987a5\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invitations_invited_by_member_id_idx_d5c987a5\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invitations_invited_by_member_id_idx_d5c987a5\"",
+        "sql": "CREATE INDEX \"invitations_invited_by_member_id_idx_d5c987a5\" ON \"public\".\"invitations\" (\"invited_by_member_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invitations_invited_by_member_id_idx_d5c987a5\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invitations_invited_by_member_id_idx_d5c987a5\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invitations.invitations_one_pending_per_email_5bb62447",
+    "label": "Create index \"invitations_one_pending_per_email_5bb62447\" on \"invitations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invitations_one_pending_per_email_5bb62447",
+        "table": "invitations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invitations_one_pending_per_email_5bb62447\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invitations_one_pending_per_email_5bb62447\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invitations_one_pending_per_email_5bb62447\"",
+        "sql": "CREATE UNIQUE INDEX \"invitations_one_pending_per_email_5bb62447\" ON \"public\".\"invitations\" (\"workspace_id\", \"email\") WHERE ((status = 'pending'))",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invitations_one_pending_per_email_5bb62447\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invitations_one_pending_per_email_5bb62447\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invitations.invitations_workspace_id_created_at_idx_3f0db799",
+    "label": "Create index \"invitations_workspace_id_created_at_idx_3f0db799\" on \"invitations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invitations_workspace_id_created_at_idx_3f0db799",
+        "table": "invitations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invitations_workspace_id_created_at_idx_3f0db799\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invitations_workspace_id_created_at_idx_3f0db799\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invitations_workspace_id_created_at_idx_3f0db799\"",
+        "sql": "CREATE INDEX \"invitations_workspace_id_created_at_idx_3f0db799\" ON \"public\".\"invitations\" (\"workspace_id\", \"created_at\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invitations_workspace_id_created_at_idx_3f0db799\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invitations_workspace_id_created_at_idx_3f0db799\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invitations.invitations_workspace_id_idx_90a9f461",
+    "label": "Create index \"invitations_workspace_id_idx_90a9f461\" on \"invitations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invitations_workspace_id_idx_90a9f461",
+        "table": "invitations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invitations_workspace_id_idx_90a9f461\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invitations_workspace_id_idx_90a9f461\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invitations_workspace_id_idx_90a9f461\"",
+        "sql": "CREATE INDEX \"invitations_workspace_id_idx_90a9f461\" ON \"public\".\"invitations\" (\"workspace_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invitations_workspace_id_idx_90a9f461\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invitations_workspace_id_idx_90a9f461\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.reply_suggestions.reply_suggestions_conversation_id_idx_0c3639df",
+    "label": "Create index \"reply_suggestions_conversation_id_idx_0c3639df\" on \"reply_suggestions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "reply_suggestions_conversation_id_idx_0c3639df",
+        "table": "reply_suggestions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"reply_suggestions_conversation_id_idx_0c3639df\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"reply_suggestions_conversation_id_idx_0c3639df\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"reply_suggestions_conversation_id_idx_0c3639df\"",
+        "sql": "CREATE INDEX \"reply_suggestions_conversation_id_idx_0c3639df\" ON \"public\".\"reply_suggestions\" (\"conversation_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"reply_suggestions_conversation_id_idx_0c3639df\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"reply_suggestions_conversation_id_idx_0c3639df\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.reply_suggestions.reply_suggestions_member_id_idx_10d5a0e2",
+    "label": "Create index \"reply_suggestions_member_id_idx_10d5a0e2\" on \"reply_suggestions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "reply_suggestions_member_id_idx_10d5a0e2",
+        "table": "reply_suggestions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"reply_suggestions_member_id_idx_10d5a0e2\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"reply_suggestions_member_id_idx_10d5a0e2\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"reply_suggestions_member_id_idx_10d5a0e2\"",
+        "sql": "CREATE INDEX \"reply_suggestions_member_id_idx_10d5a0e2\" ON \"public\".\"reply_suggestions\" (\"member_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"reply_suggestions_member_id_idx_10d5a0e2\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"reply_suggestions_member_id_idx_10d5a0e2\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.reply_suggestions.reply_suggestions_workspace_id_idx_90a9f461",
+    "label": "Create index \"reply_suggestions_workspace_id_idx_90a9f461\" on \"reply_suggestions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "reply_suggestions_workspace_id_idx_90a9f461",
+        "table": "reply_suggestions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"reply_suggestions_workspace_id_idx_90a9f461\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"reply_suggestions_workspace_id_idx_90a9f461\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"reply_suggestions_workspace_id_idx_90a9f461\"",
+        "sql": "CREATE INDEX \"reply_suggestions_workspace_id_idx_90a9f461\" ON \"public\".\"reply_suggestions\" (\"workspace_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"reply_suggestions_workspace_id_idx_90a9f461\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"reply_suggestions_workspace_id_idx_90a9f461\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.reply_suggestions.reply_suggestions_workspace_id_status_created_at_idx_2539eff4",
+    "label": "Create index \"reply_suggestions_workspace_id_status_created_at_idx_2539eff4\" on \"reply_suggestions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "reply_suggestions_workspace_id_status_created_at_idx_2539eff4",
+        "table": "reply_suggestions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"reply_suggestions_workspace_id_status_created_at_idx_2539eff4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"reply_suggestions_workspace_id_status_created_at_idx_2539eff4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"reply_suggestions_workspace_id_status_created_at_idx_2539eff4\"",
+        "sql": "CREATE INDEX \"reply_suggestions_workspace_id_status_created_at_idx_2539eff4\" ON \"public\".\"reply_suggestions\" (\"workspace_id\", \"status\", \"created_at\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"reply_suggestions_workspace_id_status_created_at_idx_2539eff4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"reply_suggestions_workspace_id_status_created_at_idx_2539eff4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invitations.invitations_workspace_id_fkey",
+    "label": "Add foreign key \"invitations_workspace_id_fkey\" on \"invitations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invitations_workspace_id_fkey",
+        "table": "invitations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invitations_workspace_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invitations_workspace_id_fkey",
+          "public",
+          "\"public\".\"invitations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invitations_workspace_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invitations\"\nADD CONSTRAINT \"invitations_workspace_id_fkey\"\nFOREIGN KEY (\"workspace_id\")\nREFERENCES \"public\".\"workspaces\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invitations_workspace_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invitations_workspace_id_fkey",
+          "public",
+          "\"public\".\"invitations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invitations.invitations_invited_by_member_id_fkey",
+    "label": "Add foreign key \"invitations_invited_by_member_id_fkey\" on \"invitations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invitations_invited_by_member_id_fkey",
+        "table": "invitations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invitations_invited_by_member_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invitations_invited_by_member_id_fkey",
+          "public",
+          "\"public\".\"invitations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invitations_invited_by_member_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invitations\"\nADD CONSTRAINT \"invitations_invited_by_member_id_fkey\"\nFOREIGN KEY (\"invited_by_member_id\")\nREFERENCES \"public\".\"members\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invitations_invited_by_member_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invitations_invited_by_member_id_fkey",
+          "public",
+          "\"public\".\"invitations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.reply_suggestions.reply_suggestions_workspace_id_fkey",
+    "label": "Add foreign key \"reply_suggestions_workspace_id_fkey\" on \"reply_suggestions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "reply_suggestions_workspace_id_fkey",
+        "table": "reply_suggestions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"reply_suggestions_workspace_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "reply_suggestions_workspace_id_fkey",
+          "public",
+          "\"public\".\"reply_suggestions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"reply_suggestions_workspace_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"reply_suggestions\"\nADD CONSTRAINT \"reply_suggestions_workspace_id_fkey\"\nFOREIGN KEY (\"workspace_id\")\nREFERENCES \"public\".\"workspaces\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"reply_suggestions_workspace_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "reply_suggestions_workspace_id_fkey",
+          "public",
+          "\"public\".\"reply_suggestions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.reply_suggestions.reply_suggestions_conversation_id_fkey",
+    "label": "Add foreign key \"reply_suggestions_conversation_id_fkey\" on \"reply_suggestions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "reply_suggestions_conversation_id_fkey",
+        "table": "reply_suggestions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"reply_suggestions_conversation_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "reply_suggestions_conversation_id_fkey",
+          "public",
+          "\"public\".\"reply_suggestions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"reply_suggestions_conversation_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"reply_suggestions\"\nADD CONSTRAINT \"reply_suggestions_conversation_id_fkey\"\nFOREIGN KEY (\"conversation_id\")\nREFERENCES \"public\".\"conversations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"reply_suggestions_conversation_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "reply_suggestions_conversation_id_fkey",
+          "public",
+          "\"public\".\"reply_suggestions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.reply_suggestions.reply_suggestions_member_id_fkey",
+    "label": "Add foreign key \"reply_suggestions_member_id_fkey\" on \"reply_suggestions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "reply_suggestions_member_id_fkey",
+        "table": "reply_suggestions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"reply_suggestions_member_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "reply_suggestions_member_id_fkey",
+          "public",
+          "\"public\".\"reply_suggestions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"reply_suggestions_member_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"reply_suggestions\"\nADD CONSTRAINT \"reply_suggestions_member_id_fkey\"\nFOREIGN KEY (\"member_id\")\nREFERENCES \"public\".\"members\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"reply_suggestions_member_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "reply_suggestions_member_id_fkey",
+          "public",
+          "\"public\".\"reply_suggestions\""
+        ]
+      }
+    ]
+  }
+]
