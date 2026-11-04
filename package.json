@@ -8,8 +8,8 @@
   "scripts": {
     "dev": "pnpm --filter @marshaldesk/web dev",
     "build": "pnpm --filter @marshaldesk/web build",
-    "functions:plan:dev": "neon config plan --project-id flat-cloud-39881619 --branch br-falling-forest-b1bz9ifj --env apps/web/.env.local",
-    "functions:deploy:dev": "neon deploy --project-id flat-cloud-39881619 --branch br-falling-forest-b1bz9ifj --env apps/web/.env.local --no-env-pull",
+    "functions:plan:dev": "neon config plan --project-id muddy-silence-73909905 --branch br-lucky-firefly-b9jccsyf --env apps/web/.env.local",
+    "functions:deploy:dev": "neon deploy --project-id muddy-silence-73909905 --branch br-lucky-firefly-b9jccsyf --env apps/web/.env.local --no-env-pull",
     "realtime:deploy:dev": "pnpm --filter @marshaldesk/realtime deploy:dev",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
