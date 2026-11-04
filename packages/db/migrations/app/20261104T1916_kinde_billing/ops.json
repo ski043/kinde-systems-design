@@ -1,0 +1,410 @@
+[
+  {
+    "id": "dropCheckConstraint.workspaces.workspaces_plan_check_fe6aa8d0",
+    "label": "Drop check constraint \"workspaces_plan_check_fe6aa8d0\" on \"workspaces\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "workspaces_plan_check_fe6aa8d0",
+        "table": "workspaces"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"workspaces_plan_check_fe6aa8d0\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workspaces_plan_check_fe6aa8d0",
+          "public",
+          "\"public\".\"workspaces\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"workspaces_plan_check_fe6aa8d0\"",
+        "sql": "ALTER TABLE \"public\".\"workspaces\" DROP CONSTRAINT \"workspaces_plan_check_fe6aa8d0\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"workspaces_plan_check_fe6aa8d0\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workspaces_plan_check_fe6aa8d0",
+          "public",
+          "\"public\".\"workspaces\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.workspaces.plan",
+    "label": "Drop column \"plan\" from \"workspaces\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "plan",
+        "table": "workspaces"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"plan\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "workspaces",
+          "plan"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"plan\"",
+        "sql": "ALTER TABLE \"public\".\"workspaces\" DROP COLUMN \"plan\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"plan\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "workspaces",
+          "plan"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.kinde_webhook_deliveries",
+    "label": "Create table \"kinde_webhook_deliveries\"",
+    "summary": "Creates table \"kinde_webhook_deliveries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "kinde_webhook_deliveries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"kinde_webhook_deliveries\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"kinde_webhook_deliveries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"kinde_webhook_deliveries\"",
+        "sql": "CREATE TABLE \"public\".\"kinde_webhook_deliveries\" (\n  \"received_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"type\" text NOT NULL,\n  \"webhook_id\" text NOT NULL,\n  PRIMARY KEY (\"webhook_id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"kinde_webhook_deliveries\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"kinde_webhook_deliveries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.usage_reports",
+    "label": "Create table \"usage_reports\"",
+    "summary": "Creates table \"usage_reports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "usage_reports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"usage_reports\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"usage_reports\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"usage_reports\"",
+        "sql": "CREATE TABLE \"public\".\"usage_reports\" (\n  \"cycle_end\" timestamptz NOT NULL,\n  \"cycle_start\" timestamptz NOT NULL,\n  \"feature\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"kinde_agreement_id\" text NOT NULL,\n  \"kinde_record_id\" text NOT NULL,\n  \"reported_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"reported_total\" int4 NOT NULL,\n  \"workspace_id\" uuid NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"usage_reports\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"usage_reports\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.workspaces.billing_changed_at",
+    "label": "Add column \"billing_changed_at\" to \"workspaces\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "billing_changed_at",
+        "table": "workspaces"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"billing_changed_at\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "workspaces",
+          "billing_changed_at"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"billing_changed_at\"",
+        "sql": "ALTER TABLE \"public\".\"workspaces\" ADD COLUMN \"billing_changed_at\" timestamptz DEFAULT (now()) NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"billing_changed_at\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "workspaces",
+          "billing_changed_at"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.workspaces.kinde_billing_customer_id",
+    "label": "Add column \"kinde_billing_customer_id\" to \"workspaces\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "kinde_billing_customer_id",
+        "table": "workspaces"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"kinde_billing_customer_id\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "workspaces",
+          "kinde_billing_customer_id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"kinde_billing_customer_id\"",
+        "sql": "ALTER TABLE \"public\".\"workspaces\" ADD COLUMN \"kinde_billing_customer_id\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"kinde_billing_customer_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "workspaces",
+          "kinde_billing_customer_id"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.workspaces.workspaces_kinde_billing_customer_id_key",
+    "label": "Add unique constraint on \"workspaces\" (kinde_billing_customer_id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "workspaces_kinde_billing_customer_id_key",
+        "table": "workspaces"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"workspaces_kinde_billing_customer_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workspaces_kinde_billing_customer_id_key",
+          "public",
+          "\"public\".\"workspaces\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"workspaces_kinde_billing_customer_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"workspaces\" ADD CONSTRAINT \"workspaces_kinde_billing_customer_id_key\" UNIQUE (\"kinde_billing_customer_id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"workspaces_kinde_billing_customer_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workspaces_kinde_billing_customer_id_key",
+          "public",
+          "\"public\".\"workspaces\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.usage_reports.usage_reports_latest_ccf351e8",
+    "label": "Create index \"usage_reports_latest_ccf351e8\" on \"usage_reports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "usage_reports_latest_ccf351e8",
+        "table": "usage_reports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"usage_reports_latest_ccf351e8\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"usage_reports_latest_ccf351e8\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"usage_reports_latest_ccf351e8\"",
+        "sql": "CREATE INDEX \"usage_reports_latest_ccf351e8\" ON \"public\".\"usage_reports\" (\"workspace_id\", \"kinde_agreement_id\", \"cycle_start\", \"reported_at\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"usage_reports_latest_ccf351e8\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"usage_reports_latest_ccf351e8\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.usage_reports.usage_reports_workspace_id_idx_90a9f461",
+    "label": "Create index \"usage_reports_workspace_id_idx_90a9f461\" on \"usage_reports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "usage_reports_workspace_id_idx_90a9f461",
+        "table": "usage_reports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"usage_reports_workspace_id_idx_90a9f461\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"usage_reports_workspace_id_idx_90a9f461\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"usage_reports_workspace_id_idx_90a9f461\"",
+        "sql": "CREATE INDEX \"usage_reports_workspace_id_idx_90a9f461\" ON \"public\".\"usage_reports\" (\"workspace_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"usage_reports_workspace_id_idx_90a9f461\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"usage_reports_workspace_id_idx_90a9f461\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.usage_reports.usage_reports_workspace_id_fkey",
+    "label": "Add foreign key \"usage_reports_workspace_id_fkey\" on \"usage_reports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "usage_reports_workspace_id_fkey",
+        "table": "usage_reports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"usage_reports_workspace_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "usage_reports_workspace_id_fkey",
+          "public",
+          "\"public\".\"usage_reports\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"usage_reports_workspace_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"usage_reports\"\nADD CONSTRAINT \"usage_reports_workspace_id_fkey\"\nFOREIGN KEY (\"workspace_id\")\nREFERENCES \"public\".\"workspaces\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"usage_reports_workspace_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "usage_reports_workspace_id_fkey",
+          "public",
+          "\"public\".\"usage_reports\""
+        ]
+      }
+    ]
+  }
+]

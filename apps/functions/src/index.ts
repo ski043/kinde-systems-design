@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { getSource, getSourceIngestState } from "@marshaldesk/db";
+import { reconcileReplySuggestionUsage } from "@marshaldesk/kinde";
 import {
   FUNCTION_ROUTES,
   parseSourceStorageKey,
@@ -160,6 +161,16 @@ async function handleSchedule(): Promise<Response> {
   return status(200, { closed, staleSources: failed });
 }
 
+async function handleReconcileUsage(): Promise<Response> {
+  const results = await reconcileReplySuggestionUsage();
+  const outcomes: Record<string, number> = {};
+  for (const { outcome } of results) {
+    outcomes[outcome.kind] = (outcomes[outcome.kind] ?? 0) + 1;
+  }
+  logInfo("reconcile_usage.done", { workspaces: results.length, ...outcomes });
+  return status(200, { results });
+}
+
 type Route = (typeof FUNCTION_ROUTES)[keyof typeof FUNCTION_ROUTES];
 
 function isRoute(pathname: string): pathname is Route {
@@ -185,6 +196,9 @@ async function route(request: Request): Promise<Response> {
     case FUNCTION_ROUTES.autoCloseTrigger:
       if (!isTrigger(request)) return status(401, { error: "unauthorized" });
       return handleSchedule();
+    case FUNCTION_ROUTES.reconcileUsageTrigger:
+      if (!isTrigger(request)) return status(401, { error: "unauthorized" });
+      return handleReconcileUsage();
     default: {
       const unreachable: never = pathname;
       return status(404, { error: "not_found", path: String(unreachable) });

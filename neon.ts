@@ -13,8 +13,11 @@ function requireEnv(name: string): string {
 }
 
 const uploadsBucket = process.env["STORAGE_UPLOADS_BUCKET"] ?? "uploads";
+const profileImagesBucket =
+  process.env["STORAGE_PROFILE_IMAGES_BUCKET"] ?? "profile-images";
 
 export default defineConfig({
+  aiGateway: true,
   functions: {
     jobs: {
       name: "MarshalDesk jobs",
@@ -24,12 +27,17 @@ export default defineConfig({
         REALTIME_URL: requireEnv("REALTIME_URL"),
         REALTIME_PUBLISH_SECRET: requireEnv("REALTIME_PUBLISH_SECRET"),
         STORAGE_UPLOADS_BUCKET: uploadsBucket,
+        // Usage reconciliation reads and reports metered usage in Kinde Billing.
+        KINDE_ISSUER_URL: requireEnv("KINDE_ISSUER_URL"),
+        KINDE_M2M_CLIENT_ID: requireEnv("KINDE_M2M_CLIENT_ID"),
+        KINDE_M2M_CLIENT_SECRET: requireEnv("KINDE_M2M_CLIENT_SECRET"),
       },
       dev: { port: 8788 },
     },
   },
   buckets: {
     [uploadsBucket]: {},
+    [profileImagesBucket]: { access: "public_read" },
   },
   triggers: {
     "source-uploaded": {
@@ -44,6 +52,14 @@ export default defineConfig({
       function: "jobs",
       cron: "*/15 * * * *",
       functionPath: "/triggers/auto-close",
+    },
+    // Hourly, not every 15 minutes: a cold instance fetches a new Kinde M2M
+    // token, and the Kinde Free plan allows 2,000 a month.
+    "reconcile-usage": {
+      type: "schedule",
+      function: "jobs",
+      cron: "41 * * * *",
+      functionPath: "/triggers/reconcile-usage",
     },
   },
 });

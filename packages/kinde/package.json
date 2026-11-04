@@ -1,0 +1,21 @@
+{
+  "name": "@marshaldesk/kinde",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@marshaldesk/db": "workspace:*",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.4",
+    "typescript": "^5.9.3"
+  }
+}
