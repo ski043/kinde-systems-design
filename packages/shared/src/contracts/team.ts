@@ -38,7 +38,7 @@ export const teamContract = {
         path: "/team/invitations",
         summary: "Invite a person by email with a role",
         description:
-          "The invited person joins when they sign in with that email. Inviting the same email with the same role again keeps the existing invitation. Emails that already belong to any workspace are rejected, since a person can only be in one.",
+          "The invited person joins when they sign in with that email. Inviting the same email again keeps the existing invitation. Emails that already belong to any workspace are rejected, since a person can only be in one.",
         tags: ["Team"],
       }),
     )
@@ -64,7 +64,7 @@ export const teamContract = {
         path: "/team/members/{memberId}",
         summary: "Change a member's role",
         description:
-          "Takes effect within a minute, including for a member who is signed in. The owner's role can't be changed.",
+          "Makes a member an owner or support. Takes effect within a minute, including for a member who is signed in. The workspace's last owner can't be made support.",
         tags: ["Team"],
       }),
     )
@@ -78,7 +78,7 @@ export const teamContract = {
         path: "/team/members/{memberId}",
         summary: "Remove a member from the workspace",
         description:
-          "Their requests fail right away and their real-time connections close. The owner can't be removed.",
+          "Their requests fail right away and their real-time connections close. An owner can't be removed: make them support first.",
         tags: ["Team"],
       }),
     )

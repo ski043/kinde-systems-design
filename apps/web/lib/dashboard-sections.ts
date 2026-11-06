@@ -42,7 +42,6 @@ export const DASHBOARD_SECTIONS: readonly DashboardSection[] = [
     key: "billing",
     title: "Billing",
     href: routes.billing,
-    // Before Team, so a billing admin lands here.
     permissions: ["billing:manage"],
     matches: (pathname) => pathname === routes.billing,
   },

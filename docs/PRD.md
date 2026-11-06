@@ -82,14 +82,13 @@ Everything else in the stack stays as in v1 (Neon for Postgres, object storage, 
 
 ## 4. Users
 
-| User              | Who they are                                                                             | What they need                                                                                                                     |
-| ----------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Owner**         | The member who signed up and created the workspace. Each workspace has exactly one owner | Everything: knowledge, widget, conversations, team, and billing                                                                    |
-| **Support**       | A teammate invited to answer conversations                                               | See conversations live, take over, reply, hand back, close, and use reply suggestions. No access to settings, the team, or billing |
-| **Billing admin** | A teammate invited to manage the plan, often someone in finance                          | See and change the plan, payment details, and invoices. No access to conversations                                                 |
-| **Visitor**       | Anonymous person on the business's website                                               | A fast, correct answer, or a real person when it matters                                                                           |
+| User        | Who they are                                                                                                             | What they need                                                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Owner**   | The member who signed up and created the workspace, and anyone they made an owner. Each workspace has at least one owner | Everything: knowledge, widget, conversations, team, and billing                                                                    |
+| **Support** | A teammate invited to answer conversations                                                                               | See conversations live, take over, reply, hand back, close, and use reply suggestions. No access to settings, the team, or billing |
+| **Visitor** | Anonymous person on the business's website                                                                               | A fast, correct answer, or a real person when it matters                                                                           |
 
-Owner, support, and billing admin are **roles**. Every person with dashboard access is a **member** of exactly one workspace, with exactly one role. Roles map to Kinde roles, and what a role allows is a set of Kinde **permissions** (section 7.7). The app always checks permissions, never role names.
+Owner and support are **roles**. Every person with dashboard access is a **member** of exactly one workspace, with exactly one role. Roles map to Kinde roles, and what a role allows is a set of Kinde **permissions** (section 7.7). The app always checks permissions, never role names.
 
 The role is called "support", not "agent", because in this product "the agent" is the AI (see `CONTEXT.md`).
 
@@ -198,9 +197,10 @@ In v2, "the owner" in this flow means any member with the `conversations:reply` 
 ### Flow D: Owner builds a team (v2)
 
 1. **Sign-up.** A new person signs up through Kinde's hosted login. After their first sign-in, the first-run step asks for the business name. The server creates a Kinde organization and a workspace linked to it, and makes the person the workspace's owner.
-2. **Invite.** The owner enters a teammate's email and picks a role (support or billing admin).
+2. **Invite.** The owner enters a teammate's email. Invited teammates get the support role.
 3. **Join.** The teammate signs in through Kinde and lands in the owner's workspace with that role.
-4. **Change or remove.** The owner can change a member's role or remove them. A removed member loses dashboard access, and their open real-time connections stop receiving updates.
+4. **Change role.** An owner can make a support member an owner, or make an owner support. The workspace always keeps at least one owner, so the last owner can't be made support. An owner can make themselves support while another owner exists, and loses owner access right away. A signed-in member gets the new role's permissions within a minute (T-7).
+5. **Remove.** An owner can remove a support member. A removed member loses dashboard access, and their open real-time connections stop receiving updates. To remove an owner, make them support first.
 
 ### Flow E: An AI reply is counted and billed (v2)
 
@@ -331,27 +331,28 @@ Roles and permissions are defined in Kinde and carried in the member's access to
 | `suggestions:create`  | Use AI reply suggestions                                                      |
 | `knowledge:manage`    | Add, edit, and delete sources                                                 |
 | `widget:manage`       | Change widget settings and allowed domains                                    |
-| `members:manage`      | Invite members, change roles, remove members                                  |
+| `members:manage`      | Invite and remove members, and change their roles                             |
 | `billing:manage`      | See the plan and usage, open the pricing table and the billing portal         |
 
 **Roles**
 
-| Role (Kinde key)                | Permissions                                                       |
-| ------------------------------- | ----------------------------------------------------------------- |
-| Owner (`owner`)                 | All of the above                                                  |
-| Support (`support`)             | `conversations:read`, `conversations:reply`, `suggestions:create` |
-| Billing admin (`billing-admin`) | `billing:manage`                                                  |
+| Role (Kinde key)    | Permissions                                                       |
+| ------------------- | ----------------------------------------------------------------- |
+| Owner (`owner`)     | All of the above                                                  |
+| Support (`support`) | `conversations:read`, `conversations:reply`, `suggestions:create` |
 
-| ID  | Requirement                                                                                                                                                                 | Priority |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| T-1 | A Team page lists members with their name, email, role, and avatar. Members without `members:manage` can see the list but not change it                                     | P0       |
-| T-2 | The owner invites a person by email with a role (support or billing admin). The invited person signs in through Kinde and joins that workspace with that role               | P0       |
-| T-3 | The owner can change a member's role and remove members. The owner can't remove themselves or change their own role. Each workspace has exactly one owner                   | P0       |
-| T-4 | Every oRPC procedure that touches workspace data declares the permission it needs and checks it on the server. Missing permission returns a typed `PERMISSION_DENIED` error | P0       |
-| T-5 | The dashboard hides navigation and actions the member's permissions don't allow. This is for usability only. The server check in T-4 is the real control                    | P0       |
-| T-6 | Every conversation action checks that the conversation belongs to the member's workspace. Changing a conversation ID in a request never reveals another workspace's data    | P0       |
-| T-7 | Role changes and removals take effect within one minute, including for members who are signed in. Removed members can no longer get real-time tokens                        | P0       |
-| T-8 | Transfer ownership, conversation assignment to specific members, custom roles                                                                                               | P2       |
+Kinde's free tier allows two roles, so these are the only two. A billing admin role (`billing:manage` plus Kinde's `org:write:billing`) can be added later in Kinde without changing the permission checks, because the code checks permissions, never role names.
+
+| ID  | Requirement                                                                                                                                                                                                                                   | Priority |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| T-1 | A Team page lists members with their name, email, role, and avatar. Members without `members:manage` can see the list but not change it                                                                                                       | P0       |
+| T-2 | An owner invites a person by email. The invited person signs in through Kinde and joins that workspace with the support role. Invitations never give the owner role                                                                           | P0       |
+| T-3 | An owner can change a member's role between support and owner, and remove support members. Each workspace keeps at least one owner: making the last owner support fails with `LAST_OWNER`. Owners can't be removed until they're made support | P0       |
+| T-4 | Every oRPC procedure that touches workspace data declares the permission it needs and checks it on the server. Missing permission returns a typed `PERMISSION_DENIED` error                                                                   | P0       |
+| T-5 | The dashboard hides navigation and actions the member's permissions don't allow. This is for usability only. The server check in T-4 is the real control                                                                                      | P0       |
+| T-6 | Every conversation action checks that the conversation belongs to the member's workspace. Changing a conversation ID in a request never reveals another workspace's data                                                                      | P0       |
+| T-7 | Role changes and removals take effect within one minute, including for members who are signed in. Removed members can no longer get real-time tokens                                                                                          | P0       |
+| T-8 | Conversation assignment to specific members, custom roles. Ownership moves by making someone else an owner, then making yourself support                                                                                                      | P2       |
 
 ### 7.8 Billing and plans (v2)
 
@@ -434,7 +435,7 @@ workspaces        id, name, kinde_org_code (unique, v2), kinde_billing_customer_
                   (position, color, agent_name, agent_avatar_key?, greeting),
                   suggested_questions[]
 members           id, workspace_id, kinde_user_id (unique, v2; replaces user_id),
-                  role (owner | support | billing-admin, v2), name, avatar
+                  role (owner | support, v2), name, avatar
 invitations       id, workspace_id, email, role, invited_by_member_id, status,      (v2)
                   created_at, accepted_at
 ai_replies        id, workspace_id, conversation_id, message_id (the visitor      (v2)
@@ -502,24 +503,26 @@ These cases **are** the spec. Run each one by hand in the widget on the demo sit
 
 ### Team, billing, AI replies, and suggestions (v2)
 
-| #   | Scenario                                                                          | Expected outcome                                                                                                               |
-| --- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| 23  | Owner invites a support member, who signs in                                      | They land in the owner's workspace, see the inbox, and don't see Knowledge, Widget, Team, or Billing                           |
-| 24  | Support member calls a knowledge or billing procedure directly (bypassing the UI) | `PERMISSION_DENIED`, nothing changes                                                                                           |
-| 25  | Member of workspace B requests a conversation ID from workspace A                 | Not found. Nothing from workspace A is returned                                                                                |
-| 26  | Billing admin signs in                                                            | Sees Billing only. Can't open the inbox or conversation rooms                                                                  |
-| 27  | Owner removes a signed-in member                                                  | Within a minute, the member's requests fail and they stop receiving real-time updates                                          |
-| 28  | Workspace on Free clicks Suggest reply                                            | `PLAN_REQUIRED`, no model call. Owner and billing admins see an upgrade prompt, support members see "Ask your workspace owner" |
-| 29  | Billing admin upgrades to Pro in the Kinde portal                                 | Within a minute, Suggest reply works without a redeploy or sign-out                                                            |
-| 30  | A support question is answered by the agent                                       | The reply streams to the visitor, and AI reply usage goes up by exactly one                                                    |
-| 31  | The same visitor message is processed again (retry or duplicate delivery)         | No second answer, usage unchanged                                                                                              |
-| 32  | The model fails or times out mid-answer                                           | The turn fails, the row is `failed`, usage unchanged                                                                           |
-| 33  | Free workspace at its monthly maximum, visitor asks a covered question            | No model call. Handoff with `ai_reply_limit`, state `waiting`. The visitor sees the low-confidence handoff copy                |
-| 34  | Pro workspace past its included amount                                            | The agent still answers. The extra replies show as billed on the Billing page and in Kinde                                     |
-| 35  | Visitor sends small talk, an off-topic message, or asks for a person              | Handled as before. Usage unchanged                                                                                             |
-| 36  | Billing state can't be read for a workspace                                       | The agent hands off with `ai_reply_limit` instead of answering                                                                 |
-| 37  | Reconciliation job runs                                                           | Ledger total and Kinde's recorded total match. Capped plans report nothing                                                     |
-| 38  | Suggest reply succeeds on Pro                                                     | Draft streams into the composer, the visitor sees nothing, usage is unchanged                                                  |
+| #   | Scenario                                                                          | Expected outcome                                                                                                                                                                                                   |
+| --- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 23  | Owner invites a support member, who signs in                                      | They land in the owner's workspace, see the inbox, and don't see Knowledge, Widget, Team, or Billing                                                                                                               |
+| 24  | Support member calls a knowledge or billing procedure directly (bypassing the UI) | `PERMISSION_DENIED`, nothing changes                                                                                                                                                                               |
+| 25  | Member of workspace B requests a conversation ID from workspace A                 | Not found. Nothing from workspace A is returned                                                                                                                                                                    |
+| 26  | Owner opens the invite form                                                       | Support is the only role offered                                                                                                                                                                                   |
+| 27  | Owner removes a signed-in member                                                  | Within a minute, the member's requests fail and they stop receiving real-time updates                                                                                                                              |
+| 27a | Owner makes a signed-in support member an owner, then makes them support again    | Each time, within a minute and without signing out, the member's nav and procedures follow the new role (T-7). A knowledge procedure works after the first change and returns `PERMISSION_DENIED` after the second |
+| 27b | The only owner tries to make themselves support                                   | `LAST_OWNER`, shown as "A workspace needs at least one owner. Make someone else an owner first." Nothing changes in Kinde or the database                                                                          |
+| 28  | Workspace on Free clicks Suggest reply                                            | `PLAN_REQUIRED`, no model call. The owner sees an upgrade prompt, support members see "Ask your workspace owner"                                                                                                   |
+| 29  | Owner upgrades to Pro in the Kinde portal                                         | Within a minute, Suggest reply works without a redeploy or sign-out                                                                                                                                                |
+| 30  | A support question is answered by the agent                                       | The reply streams to the visitor, and AI reply usage goes up by exactly one                                                                                                                                        |
+| 31  | The same visitor message is processed again (retry or duplicate delivery)         | No second answer, usage unchanged                                                                                                                                                                                  |
+| 32  | The model fails or times out mid-answer                                           | The turn fails, the row is `failed`, usage unchanged                                                                                                                                                               |
+| 33  | Free workspace at its monthly maximum, visitor asks a covered question            | No model call. Handoff with `ai_reply_limit`, state `waiting`. The visitor sees the low-confidence handoff copy                                                                                                    |
+| 34  | Pro workspace past its included amount                                            | The agent still answers. The extra replies show as billed on the Billing page and in Kinde                                                                                                                         |
+| 35  | Visitor sends small talk, an off-topic message, or asks for a person              | Handled as before. Usage unchanged                                                                                                                                                                                 |
+| 36  | Billing state can't be read for a workspace                                       | The agent hands off with `ai_reply_limit` instead of answering                                                                                                                                                     |
+| 37  | Reconciliation job runs                                                           | Ledger total and Kinde's recorded total match. Capped plans report nothing                                                                                                                                         |
+| 38  | Suggest reply succeeds on Pro                                                     | Draft streams into the composer, the visitor sees nothing, usage is unchanged                                                                                                                                      |
 
 **Tone.** Friendly, concise, plain language. Refusals are one or two sentences and never lecture the visitor.
 

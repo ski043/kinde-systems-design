@@ -1,6 +1,6 @@
 import { error } from "@orpc/contract";
 import * as z from "zod";
-import { assignableRoleSchema, permissionSchema } from "./permissions";
+import { memberRoleSchema, permissionSchema } from "./permissions";
 import { conversationStateSchema } from "./schemas/conversation";
 
 export const UnauthorizedError = error("UNAUTHORIZED", {
@@ -49,22 +49,19 @@ export const NoInvitationError = error("NOT_FOUND", {
   message: "There's no pending invitation for your email address.",
 });
 export const OwnerProtectedError = error("OWNER_PROTECTED", {
+  message: "An owner can't be removed. Make them support first.",
+});
+export const LastOwnerError = error("LAST_OWNER", {
   message:
-    "The workspace owner can't be removed, and their role can't be changed.",
+    "A workspace needs at least one owner. Make someone else an owner first.",
 });
 export const AlreadyInWorkspaceError = error("ALREADY_IN_WORKSPACE", {
   message:
     "This person already belongs to a workspace. A person can only be in one.",
 });
-export const AlreadyInvitedError = error("ALREADY_INVITED", {
-  message:
-    "This email already has a pending invitation with another role. Revoke it first.",
-  data: z.object({ role: assignableRoleSchema }),
-});
 export const RoleUnavailableError = error("ROLE_UNAVAILABLE", {
-  message:
-    "This role isn't set up in Kinde yet. Add it there (billing admin needs a paid Kinde plan), then try again.",
-  data: z.object({ role: assignableRoleSchema }),
+  message: "This role isn't set up in Kinde yet. Add it there, then try again.",
+  data: z.object({ role: memberRoleSchema }),
 });
 
 export const PlanRequiredError = error("PLAN_REQUIRED", {
@@ -128,7 +125,6 @@ export const acceptInvitationErrors = {
 export const inviteErrors = {
   ...permissionErrors,
   [AlreadyInWorkspaceError.code]: AlreadyInWorkspaceError,
-  [AlreadyInvitedError.code]: AlreadyInvitedError,
   [RoleUnavailableError.code]: RoleUnavailableError,
 };
 
@@ -144,6 +140,8 @@ export const memberChangeErrors = {
 };
 
 export const roleChangeErrors = {
-  ...memberChangeErrors,
+  ...permissionErrors,
+  [MemberNotFoundError.code]: MemberNotFoundError,
+  [LastOwnerError.code]: LastOwnerError,
   [RoleUnavailableError.code]: RoleUnavailableError,
 };

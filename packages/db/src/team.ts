@@ -6,18 +6,15 @@ import {
   findMembershipByKindeUserId,
   memberFields,
   type MemberRecord,
+  type MemberRoleValue,
   type Membership,
   toMemberRecord,
   toWorkspaceRecord,
   workspaceFields,
 } from "./workspaces";
 
-/** Roles a member can be given. The owner is created with the workspace and never changes. */
-export type AssignableRoleValue = "support" | "billing-admin";
-const ASSIGNABLE_ROLES: readonly AssignableRoleValue[] = [
-  "support",
-  "billing-admin",
-];
+/** Roles an invitation can give. Owners are made by changing a member's role. */
+export type InvitationRoleValue = "support";
 
 export type InvitationStatusValue = "pending" | "accepted" | "revoked";
 
@@ -25,7 +22,7 @@ export type InvitationRecord = {
   id: string;
   workspaceId: string;
   email: string;
-  role: AssignableRoleValue;
+  role: InvitationRoleValue;
   invitedByMemberId: string;
   status: InvitationStatusValue;
   createdAt: Temporal.Instant;
@@ -85,30 +82,59 @@ export async function getMember(
   return row ? toMemberRecord(row) : null;
 }
 
+export async function countOwners(workspaceId: string): Promise<number> {
+  const owners = await getDb()
+    .orm.public.Member.select("id")
+    .where({ workspaceId, role: "owner" })
+    .all();
+  return owners.length;
+}
+
+export type RoleChangeResult =
+  | { status: "changed"; member: MemberRecord }
+  | { status: "not-found" }
+  | { status: "last-owner" };
+
 /**
- * Sets a non-owner's role and bumps `access_changed_at`, so tokens issued
- * before now count as stale. `null` when there's no such member, or they're
- * the owner, whose role never changes.
+ * Sets a member's role and bumps `access_changed_at`, so tokens issued before
+ * now count as stale. Refuses to make the workspace's last owner support.
+ * The workspace row stays locked until the change commits, so two owners
+ * making each other support at the same time can't both succeed.
  */
 export async function changeMemberRole(
   workspaceId: string,
   memberId: string,
-  role: AssignableRoleValue,
-): Promise<MemberRecord | null> {
-  const row = await getDb()
-    .orm.public.Member.select(...memberFields)
-    .where((m) =>
-      and(
-        m.id.eq(memberId),
-        m.workspaceId.eq(workspaceId),
-        m.role.in([...ASSIGNABLE_ROLES]),
-      ),
-    )
-    .update({ role, accessChangedAt: Temporal.Now.instant() });
-  return row ? toMemberRecord(row) : null;
+  role: MemberRoleValue,
+): Promise<RoleChangeResult> {
+  const db = getDb();
+  return db.transaction(async (tx) => {
+    const lockWorkspace = db.raw.sql`
+      SELECT id FROM workspaces WHERE id = ${workspaceId}::uuid FOR UPDATE`
+      .returnsRow({ id: "pg/uuid@1" })
+      .build();
+    await tx.query(lockWorkspace);
+
+    const target = await tx.orm.public.Member.select("role")
+      .where({ id: memberId, workspaceId })
+      .first();
+    if (!target) return { status: "not-found" };
+
+    if (target.role === "owner" && role !== "owner") {
+      const owners = await tx.orm.public.Member.select("id")
+        .where({ workspaceId, role: "owner" })
+        .all();
+      if (owners.length === 1) return { status: "last-owner" };
+    }
+
+    const row = await tx.orm.public.Member.select(...memberFields)
+      .where({ id: memberId, workspaceId })
+      .update({ role, accessChangedAt: Temporal.Now.instant() });
+    if (!row) return { status: "not-found" };
+    return { status: "changed", member: toMemberRecord(row) };
+  });
 }
 
-/** Deletes a non-owner. `null` when there's no such member, or they're the owner. */
+/** Deletes a non-owner. `null` when there's no such member, or they're an owner. */
 export async function deleteMember(
   workspaceId: string,
   memberId: string,
@@ -119,7 +145,7 @@ export async function deleteMember(
       and(
         m.id.eq(memberId),
         m.workspaceId.eq(workspaceId),
-        m.role.in([...ASSIGNABLE_ROLES]),
+        m.role.neq("owner"),
       ),
     )
     .delete();
@@ -153,13 +179,13 @@ export async function isEmailInAnyWorkspace(email: string): Promise<boolean> {
 
 export type NewInvitation = {
   email: string;
-  role: AssignableRoleValue;
+  role: InvitationRoleValue;
   invitedByMemberId: string;
 };
 
 /**
  * Creates a pending invitation, or returns the one already pending for this
- * email (`created: false`), whatever its role. One pending invitation per
+ * email (`created: false`). One pending invitation per
  * workspace and email is a unique index, so concurrent invites converge.
  */
 export async function createInvitation(

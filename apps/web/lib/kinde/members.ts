@@ -1,5 +1,5 @@
 import "server-only";
-import type { AssignableRole } from "@marshaldesk/shared";
+import type { MemberRole } from "@marshaldesk/shared";
 import {
   addOrganizationUser,
   addOrganizationUserRole,
@@ -12,22 +12,22 @@ import {
 } from "./management";
 import { forgetLivePermissions } from "./permissions";
 
-/** The role key isn't defined in Kinde, like `billing-admin` before the Pro upgrade. */
+/** The role key isn't defined in the Kinde environment. */
 export class RoleNotInKindeError extends Error {
-  constructor(readonly role: AssignableRole) {
+  constructor(readonly role: MemberRole) {
     super(`Kinde has no role with the key "${role}"`);
     this.name = "RoleNotInKindeError";
   }
 }
 
-async function roleIdFor(role: AssignableRole): Promise<string> {
+async function roleIdFor(role: MemberRole): Promise<string> {
   const match = (await getRoles()).find((candidate) => candidate.key === role);
   if (!match) throw new RoleNotInKindeError(role);
   return match.id;
 }
 
 /** Throws `RoleNotInKindeError` unless the role can be assigned. */
-export async function assertRoleExists(role: AssignableRole): Promise<void> {
+export async function assertRoleExists(role: MemberRole): Promise<void> {
   await roleIdFor(role);
 }
 
@@ -45,7 +45,7 @@ async function isOrganizationMember(
 export async function setOrganizationRole(
   orgCode: string,
   kindeUserId: string,
-  role: AssignableRole,
+  role: MemberRole,
 ): Promise<void> {
   const roleId = await roleIdFor(role);
   const current = await getOrganizationUserRoles(orgCode, kindeUserId);
@@ -67,7 +67,7 @@ export async function setOrganizationRole(
 export async function joinOrganization(
   orgCode: string,
   kindeUserId: string,
-  role: AssignableRole,
+  role: MemberRole,
 ): Promise<void> {
   await assertRoleExists(role);
   try {

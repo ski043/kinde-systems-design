@@ -18,8 +18,8 @@ export type AiRepliesAllowance = {
   /** Units the plan includes each cycle. Null: no limit set. */
   included: number | null;
   /**
-   * True: replies past `included` are billed per unit. False: the plan has no
-   * price for the feature, so `included` is a hard cap.
+   * True: Kinde bills the replies (per unit or by tier), so the agent never
+   * blocks. False: a maximum with no price, so `included` is a hard cap.
    */
   overageBilled: boolean;
 };
@@ -84,7 +84,10 @@ async function loadBilling(customerId: string): Promise<WorkspaceBilling> {
     aiReplies: aiReplies
       ? {
           included: aiReplies.max,
-          overageBilled: (aiReplies.unitAmount ?? 0) > 0,
+          // Tiered pricing ("first 50 free, then $1") has no maximum and may
+          // report no unit amount, so only a maximum without a price caps.
+          overageBilled:
+            aiReplies.max === null || (aiReplies.unitAmount ?? 0) > 0,
         }
       : null,
     replySuggestions: entitlements.features.has(REPLY_SUGGESTIONS_FEATURE),

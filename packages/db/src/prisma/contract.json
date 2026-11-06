@@ -155,10 +155,6 @@
               {
                 "name": "Support",
                 "value": "support"
-              },
-              {
-                "name": "BillingAdmin",
-                "value": "billing-admin"
               }
             ]
           },
@@ -189,10 +185,6 @@
               {
                 "name": "Support",
                 "value": "support"
-              },
-              {
-                "name": "BillingAdmin",
-                "value": "billing-admin"
               }
             ]
           },
@@ -3146,8 +3138,8 @@
             "invitations": {
               "checks": [
                 {
-                  "expression": "\"role\" IN ('support', 'billing-admin')",
-                  "name": "invitations_role_check_578326ec",
+                  "expression": "\"role\" IN ('support')",
+                  "name": "invitations_role_check_c8de8f61",
                   "prefix": "invitations_role_check"
                 },
                 {
@@ -3332,8 +3324,8 @@
             "members": {
               "checks": [
                 {
-                  "expression": "\"role\" IN ('owner', 'support', 'billing-admin')",
-                  "name": "members_role_check_e9e55bbe",
+                  "expression": "\"role\" IN ('owner', 'support')",
+                  "name": "members_role_check_23d96db6",
                   "prefix": "members_role_check"
                 }
               ],
@@ -4208,8 +4200,7 @@
             "InvitationRole": {
               "kind": "valueSet",
               "values": [
-                "support",
-                "billing-admin"
+                "support"
               ]
             },
             "InvitationStatus": {
@@ -4224,8 +4215,7 @@
               "kind": "valueSet",
               "values": [
                 "owner",
-                "support",
-                "billing-admin"
+                "support"
               ]
             },
             "MessageAuthor": {
@@ -4287,7 +4277,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "388637fb89cf00c77555a5f14246aa29e71d08742a49bfd414169019285eeab8"
+    "storageHash": "7904bab7874dafef270fcace11827f3353473954f0c751a1c378f8162fb2ee47"
   },
   "execution": {
     "executionHash": "935debda65339a8609a9393807079e7911aac2a22b58c522d97498f3de852661",

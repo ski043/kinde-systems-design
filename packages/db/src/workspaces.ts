@@ -2,7 +2,7 @@ import type { Temporal } from "temporal-polyfill";
 import { getDb } from "./client";
 import { isUniqueViolation } from "./errors";
 
-export type MemberRoleValue = "owner" | "support" | "billing-admin";
+export type MemberRoleValue = "owner" | "support";
 export type WorkspaceRecord = {
   id: string;
   name: string;

@@ -81,6 +81,7 @@ export {
 export {
   acceptInvitation,
   changeMemberRole,
+  countOwners,
   createInvitation,
   deleteMember,
   findPendingInvitationByEmail,
@@ -89,12 +90,13 @@ export {
   listMembers,
   listPendingInvitations,
   revokeInvitation,
-  type AssignableRoleValue,
   type InvitationAcceptance,
   type InvitationRecord,
+  type InvitationRoleValue,
   type InvitationStatusValue,
   type NewInvitation,
   type PendingInvitation,
+  type RoleChangeResult,
   type TeamMemberRecord,
 } from "./team";
 export {

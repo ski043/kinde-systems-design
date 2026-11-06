@@ -15,11 +15,11 @@ A person with access to a workspace's dashboard. A workspace has many members, a
 _Avoid_: User, teammate, staff, operator
 
 **Owner**:
-The member who created the workspace. Every workspace has exactly one owner.
+A member with the owner role: the person who created the workspace, and anyone an owner made an owner. Every workspace has at least one owner.
 _Avoid_: Admin, business user
 
 **Role**:
-A named set of permissions given to a member: owner, support, or billing admin. Roles are for assigning access, never for checking it.
+A named set of permissions given to a member: owner or support. Roles are for assigning access, never for checking it.
 _Avoid_: Level, group, position
 
 **Permission**:
@@ -30,12 +30,8 @@ _Avoid_: Scope, privilege, right
 A role that can read and reply to conversations and use reply suggestions.
 _Avoid_: Agent, staff, operator
 
-**Billing admin** (role):
-A role that can manage the plan and payment details, and nothing else.
-_Avoid_: Finance, accountant
-
 **Invitation**:
-An owner's offer of a role in the workspace to an email address. It's accepted when the invited person signs in with that email.
+An owner's offer of the support role in the workspace to an email address. It's accepted when the invited person signs in with that email.
 _Avoid_: Invite link, request, signup link
 
 **Visitor**:

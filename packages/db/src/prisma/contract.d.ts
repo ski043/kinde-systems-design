@@ -39,7 +39,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'388637fb89cf00c77555a5f14246aa29e71d08742a49bfd414169019285eeab8'>;
+  StorageHashBase<'7904bab7874dafef270fcace11827f3353473954f0c751a1c378f8162fb2ee47'>;
 export type ExecutionHash =
   ExecutionHashBase<'935debda65339a8609a9393807079e7911aac2a22b58c522d97498f3de852661'>;
 export type ProfileHash =
@@ -332,7 +332,7 @@ export type FieldOutputTypes = {
       readonly email: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly invitedByMemberId: CodecTypes['pg/uuid@1']['output'];
-      readonly role: 'support' | 'billing-admin';
+      readonly role: 'support';
       readonly status: 'pending' | 'accepted' | 'revoked';
       readonly workspaceId: CodecTypes['pg/uuid@1']['output'];
     };
@@ -350,7 +350,7 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly kindeUserId: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
-      readonly role: 'owner' | 'support' | 'billing-admin';
+      readonly role: 'owner' | 'support';
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly workspaceId: CodecTypes['pg/uuid@1']['output'];
     };
@@ -502,7 +502,7 @@ export type FieldInputTypes = {
       readonly email: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly invitedByMemberId: CodecTypes['pg/uuid@1']['input'];
-      readonly role: 'support' | 'billing-admin';
+      readonly role: 'support';
       readonly status: 'pending' | 'accepted' | 'revoked';
       readonly workspaceId: CodecTypes['pg/uuid@1']['input'];
     };
@@ -520,7 +520,7 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly kindeUserId: CodecTypes['pg/text@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
-      readonly role: 'owner' | 'support' | 'billing-admin';
+      readonly role: 'owner' | 'support';
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly workspaceId: CodecTypes['pg/uuid@1']['input'];
     };
@@ -672,7 +672,7 @@ export type StorageColumnTypes = {
       readonly email: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly invited_by_member_id: CodecTypes['pg/uuid@1']['output'];
-      readonly role: 'support' | 'billing-admin';
+      readonly role: 'support';
       readonly status: 'pending' | 'accepted' | 'revoked';
       readonly workspace_id: CodecTypes['pg/uuid@1']['output'];
     };
@@ -690,7 +690,7 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly kinde_user_id: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
-      readonly role: 'owner' | 'support' | 'billing-admin';
+      readonly role: 'owner' | 'support';
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly workspace_id: CodecTypes['pg/uuid@1']['output'];
     };
@@ -842,7 +842,7 @@ export type StorageColumnInputTypes = {
       readonly email: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly invited_by_member_id: CodecTypes['pg/uuid@1']['input'];
-      readonly role: 'support' | 'billing-admin';
+      readonly role: 'support';
       readonly status: 'pending' | 'accepted' | 'revoked';
       readonly workspace_id: CodecTypes['pg/uuid@1']['input'];
     };
@@ -860,7 +860,7 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly kinde_user_id: CodecTypes['pg/text@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
-      readonly role: 'owner' | 'support' | 'billing-admin';
+      readonly role: 'owner' | 'support';
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly workspace_id: CodecTypes['pg/uuid@1']['input'];
     };
@@ -1027,7 +1027,7 @@ export namespace Models {
     email: CodecTypes['pg/text@1']['output'];
     id: CodecTypes['pg/uuid@1']['output'];
     invitedByMemberId: CodecTypes['pg/uuid@1']['output'];
-    role: 'support' | 'billing-admin';
+    role: 'support';
     status: 'pending' | 'accepted' | 'revoked';
     workspaceId: CodecTypes['pg/uuid@1']['output'];
     invitedBy: public_Member;
@@ -1049,7 +1049,7 @@ export namespace Models {
     id: CodecTypes['pg/uuid@1']['output'];
     kindeUserId: CodecTypes['pg/text@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
-    role: 'owner' | 'support' | 'billing-admin';
+    role: 'owner' | 'support';
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     workspaceId: CodecTypes['pg/uuid@1']['output'];
     invitationsSent: public_Invitation[];
@@ -2480,7 +2480,7 @@ type ContractBase = Omit<
             };
             readonly InvitationRole: {
               readonly kind: 'valueSet';
-              readonly values: readonly ['support', 'billing-admin'];
+              readonly values: readonly ['support'];
             };
             readonly InvitationStatus: {
               readonly kind: 'valueSet';
@@ -2488,7 +2488,7 @@ type ContractBase = Omit<
             };
             readonly MemberRole: {
               readonly kind: 'valueSet';
-              readonly values: readonly ['owner', 'support', 'billing-admin'];
+              readonly values: readonly ['owner', 'support'];
             };
             readonly MessageAuthor: {
               readonly kind: 'valueSet';
@@ -3910,10 +3910,7 @@ type ContractBase = Omit<
           };
           readonly InvitationRole: {
             readonly codecId: 'pg/text@1';
-            readonly members: readonly [
-              { readonly name: 'Support'; readonly value: 'support' },
-              { readonly name: 'BillingAdmin'; readonly value: 'billing-admin' },
-            ];
+            readonly members: readonly [{ readonly name: 'Support'; readonly value: 'support' }];
           };
           readonly InvitationStatus: {
             readonly codecId: 'pg/text@1';
@@ -3928,7 +3925,6 @@ type ContractBase = Omit<
             readonly members: readonly [
               { readonly name: 'Owner'; readonly value: 'owner' },
               { readonly name: 'Support'; readonly value: 'support' },
-              { readonly name: 'BillingAdmin'; readonly value: 'billing-admin' },
             ];
           };
           readonly MessageAuthor: {

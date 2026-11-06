@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { assignableRoleSchema, memberRoleSchema } from "../permissions";
+import { invitableRoleSchema, memberRoleSchema } from "../permissions";
 
 /** Trimmed and lowercased, so an invitation matches whatever casing Kinde reports. */
 export const emailSchema = z
@@ -25,7 +25,7 @@ export type TeamMember = z.infer<typeof teamMemberSchema>;
 export const invitationSchema = z.object({
   id: z.string(),
   email: z.string(),
-  role: assignableRoleSchema,
+  role: invitableRoleSchema,
   createdAt: z.string(),
 });
 export type Invitation = z.infer<typeof invitationSchema>;
@@ -39,7 +39,7 @@ export type Team = z.infer<typeof teamSchema>;
 
 export const inviteMemberSchema = z.object({
   email: emailSchema,
-  role: assignableRoleSchema,
+  role: invitableRoleSchema,
 });
 export type InviteMemberInput = z.input<typeof inviteMemberSchema>;
 export type InviteMember = z.infer<typeof inviteMemberSchema>;
@@ -48,7 +48,7 @@ export const memberIdInputSchema = z.object({ memberId: z.uuid() });
 
 export const changeRoleSchema = z.object({
   memberId: z.uuid(),
-  role: assignableRoleSchema,
+  role: memberRoleSchema,
 });
 
 export const invitationIdInputSchema = z.object({ invitationId: z.uuid() });

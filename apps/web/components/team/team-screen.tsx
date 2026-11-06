@@ -1,8 +1,8 @@
 "use client";
 
 import type {
-  AssignableRole,
   Invitation,
+  MemberRole,
   Team,
   TeamMember,
 } from "@marshaldesk/shared";
@@ -39,7 +39,7 @@ import {
 import { orpc } from "@/lib/orpc/client";
 import { writeTeam } from "@/lib/team/cache";
 import { InviteForm } from "./invite-form";
-import { ASSIGNABLE_ROLE_ITEMS, ROLE_LABELS } from "./role";
+import { ROLE_ITEMS, ROLE_LABELS } from "./role";
 
 const dateFormat = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -74,7 +74,13 @@ function useTeamMutations() {
 
   const changeRole = useMutation(
     orpc.team.changeRole.mutationOptions({
-      onSuccess,
+      onSuccess: (team) => {
+        onSuccess(team);
+        // Your own role may have changed, and with it what you can open.
+        void queryClient.invalidateQueries({
+          queryKey: orpc.member.getCurrent.queryKey(),
+        });
+      },
       onError: (error) => {
         toast.error(
           errorMessage(error, "Couldn't change the role. Try again."),
@@ -179,10 +185,10 @@ function RoleControl({
 }: {
   member: TeamMember;
   canManage: boolean;
-  onChange: (role: AssignableRole) => void;
+  onChange: (role: MemberRole) => void;
   pending: boolean;
 }) {
-  if (member.role === "owner" || !canManage) {
+  if (!canManage) {
     return (
       <Badge variant={member.role === "owner" ? "secondary" : "outline"}>
         {ROLE_LABELS[member.role]}
@@ -191,22 +197,22 @@ function RoleControl({
   }
   return (
     <Select
-      items={ASSIGNABLE_ROLE_ITEMS}
+      items={ROLE_ITEMS}
       value={member.role}
       disabled={pending}
-      onValueChange={(value: AssignableRole | null) => {
+      onValueChange={(value: MemberRole | null) => {
         if (value && value !== member.role) onChange(value);
       }}
     >
       <SelectTrigger
         size="sm"
         aria-label={`Role of ${member.name}`}
-        className="w-36"
+        className="w-32"
       >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {ASSIGNABLE_ROLE_ITEMS.map((item) => (
+        {ROLE_ITEMS.map((item) => (
           <SelectItem key={item.value} value={item.value}>
             {item.label}
           </SelectItem>
@@ -328,14 +334,14 @@ export function TeamScreen() {
         <h1 className="font-display text-3xl tracking-[-0.04em]">Team</h1>
         <p className="text-sm text-muted-foreground">
           {canManage
-            ? "Invite people to help with conversations or billing, and decide what each of them can do."
+            ? "Invite people to help with conversations, choose who's an owner, and remove people who no longer need access."
             : "Everyone who works in this workspace."}
         </p>
       </div>
       {canManage ? (
         <SettingsSection
           title="Invite a member"
-          description="Pick the role that fits what they'll do."
+          description="Invited people join with the support role."
         >
           <InviteForm />
         </SettingsSection>
@@ -357,7 +363,7 @@ export function TeamScreen() {
       {team.invitations.length > 0 ? (
         <SettingsSection
           title="Pending invitations"
-          description="They join with the role shown when they sign in with that email."
+          description="They join when they sign in with that email."
         >
           {team.invitations.map((invitation) => (
             <InvitationRow

@@ -3,9 +3,8 @@
 // A display copy of the member's Kinde role. Permission checks never read it.
 enum MemberRole {
   @@type("pg/text@1")
-  Owner        = "owner"
-  Support      = "support"
-  BillingAdmin = "billing-admin"
+  Owner   = "owner"
+  Support = "support"
 }
 
 enum WidgetColor {
@@ -287,8 +286,7 @@ model AgentTurn {
 
 enum InvitationRole {
   @@type("pg/text@1")
-  Support      = "support"
-  BillingAdmin = "billing-admin"
+  Support = "support"
 }
 
 enum InvitationStatus {

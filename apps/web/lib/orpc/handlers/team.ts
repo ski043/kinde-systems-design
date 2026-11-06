@@ -1,6 +1,7 @@
 import "server-only";
 import {
   changeMemberRole,
+  countOwners,
   createInvitation,
   deleteMember,
   getMember,
@@ -9,7 +10,7 @@ import {
   listPendingInvitations,
   revokeInvitation as revokePendingInvitation,
 } from "@marshaldesk/db";
-import type { AssignableRole, Team } from "@marshaldesk/shared";
+import type { MemberRole, Team } from "@marshaldesk/shared";
 import { resolveAvatarUrl } from "@/lib/avatar";
 import {
   assertRoleExists,
@@ -49,7 +50,7 @@ async function loadTeam(workspaceId: string): Promise<Team> {
 /** Runs `assign`, turning a role Kinde doesn't define into the typed error. */
 async function withKindeRole<T>(
   assign: () => Promise<T>,
-  roleUnavailable: (role: AssignableRole) => Error,
+  roleUnavailable: (role: MemberRole) => Error,
 ): Promise<T> {
   try {
     return await assign();
@@ -75,14 +76,11 @@ export const invite = manageMembers.team.invite.handler(
       () => assertRoleExists(input.role),
       (role) => errors.ROLE_UNAVAILABLE({ data: { role } }),
     );
-    const { invitation } = await createInvitation(context.workspaceId, {
+    await createInvitation(context.workspaceId, {
       email: input.email,
       role: input.role,
       invitedByMemberId: context.member.id,
     });
-    if (invitation.role !== input.role) {
-      throw errors.ALREADY_INVITED({ data: { role: invitation.role } });
-    }
     return loadTeam(context.workspaceId);
   },
 );
@@ -101,28 +99,45 @@ export const revokeInvitation = manageMembers.team.revokeInvitation.handler(
 /**
  * Kinde first, so the permissions it issues next are already the new ones;
  * then the row, whose `access_changed_at` bump makes older tokens stale.
+ * Retrying converges: both steps set the role rather than toggle it.
  */
 export const changeRole = manageMembers.team.changeRole.handler(
   async ({ context, input, errors }) => {
     const target = await getMember(context.workspaceId, input.memberId);
     if (!target) throw errors.NOT_FOUND();
-    if (target.role === "owner") throw errors.OWNER_PROTECTED();
+    const demotesOwner = target.role === "owner" && input.role !== "owner";
+    if (demotesOwner && (await countOwners(context.workspaceId)) === 1) {
+      throw errors.LAST_OWNER();
+    }
 
-    await withKindeRole(
-      () =>
-        setOrganizationRole(
-          context.kindeOrgCode,
-          target.kindeUserId,
-          input.role,
-        ),
-      (role) => errors.ROLE_UNAVAILABLE({ data: { role } }),
-    );
-    const updated = await changeMemberRole(
+    const setKindeRole = (role: MemberRole) =>
+      withKindeRole(
+        () =>
+          setOrganizationRole(context.kindeOrgCode, target.kindeUserId, role),
+        (unavailable) =>
+          errors.ROLE_UNAVAILABLE({ data: { role: unavailable } }),
+      );
+    await setKindeRole(input.role);
+
+    const result = await changeMemberRole(
       context.workspaceId,
       target.id,
       input.role,
     );
-    if (!updated) throw errors.NOT_FOUND();
+    switch (result.status) {
+      case "changed":
+        break;
+      case "not-found":
+        throw errors.NOT_FOUND();
+      case "last-owner":
+        // Another owner was made support since the check above. Undo Kinde.
+        await setKindeRole(target.role);
+        throw errors.LAST_OWNER();
+      default: {
+        const unreachable: never = result;
+        throw new Error(`Unknown role change result: ${String(unreachable)}`);
+      }
+    }
 
     const permissions = await fetchLivePermissions(
       context.kindeOrgCode,

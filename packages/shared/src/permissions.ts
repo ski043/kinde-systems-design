@@ -15,13 +15,13 @@ export const permissionSchema = z.enum(PERMISSIONS);
 export type Permission = z.infer<typeof permissionSchema>;
 
 /** Role keys defined in Kinde. `members.role` stores a display copy. */
-export const MEMBER_ROLES = ["owner", "support", "billing-admin"] as const;
+export const MEMBER_ROLES = ["owner", "support"] as const;
 
 export const memberRoleSchema = z.enum(MEMBER_ROLES);
 export type MemberRole = z.infer<typeof memberRoleSchema>;
 
-/** Roles an owner can give by invitation or role change. There is exactly one owner. */
-export const ASSIGNABLE_ROLES = ["support", "billing-admin"] as const;
+/** Roles an invitation can give. Owners are made by changing a member's role. */
+export const INVITABLE_ROLES = ["support"] as const;
 
-export const assignableRoleSchema = z.enum(ASSIGNABLE_ROLES);
-export type AssignableRole = z.infer<typeof assignableRoleSchema>;
+export const invitableRoleSchema = z.enum(INVITABLE_ROLES);
+export type InvitableRole = z.infer<typeof invitableRoleSchema>;

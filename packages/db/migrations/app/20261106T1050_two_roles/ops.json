@@ -1,0 +1,170 @@
+[
+  {
+    "id": "dropCheckConstraint.invitations.invitations_role_check_578326ec",
+    "label": "Drop check constraint \"invitations_role_check_578326ec\" on \"invitations\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "invitations_role_check_578326ec",
+        "table": "invitations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"invitations_role_check_578326ec\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invitations_role_check_578326ec",
+          "public",
+          "\"public\".\"invitations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"invitations_role_check_578326ec\"",
+        "sql": "ALTER TABLE \"public\".\"invitations\" DROP CONSTRAINT \"invitations_role_check_578326ec\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"invitations_role_check_578326ec\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invitations_role_check_578326ec",
+          "public",
+          "\"public\".\"invitations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropCheckConstraint.members.members_role_check_e9e55bbe",
+    "label": "Drop check constraint \"members_role_check_e9e55bbe\" on \"members\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "members_role_check_e9e55bbe",
+        "table": "members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"members_role_check_e9e55bbe\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "members_role_check_e9e55bbe",
+          "public",
+          "\"public\".\"members\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"members_role_check_e9e55bbe\"",
+        "sql": "ALTER TABLE \"public\".\"members\" DROP CONSTRAINT \"members_role_check_e9e55bbe\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"members_role_check_e9e55bbe\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "members_role_check_e9e55bbe",
+          "public",
+          "\"public\".\"members\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.invitations.invitations_role_check_c8de8f61",
+    "label": "Add check constraint \"invitations_role_check_c8de8f61\" on \"invitations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "invitations_role_check_c8de8f61",
+        "table": "invitations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"invitations_role_check_c8de8f61\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invitations_role_check_c8de8f61",
+          "public",
+          "\"public\".\"invitations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"invitations_role_check_c8de8f61\"",
+        "sql": "ALTER TABLE \"public\".\"invitations\" ADD CONSTRAINT \"invitations_role_check_c8de8f61\" CHECK (\"role\" IN ('support'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"invitations_role_check_c8de8f61\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invitations_role_check_c8de8f61",
+          "public",
+          "\"public\".\"invitations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.members.members_role_check_23d96db6",
+    "label": "Add check constraint \"members_role_check_23d96db6\" on \"members\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "members_role_check_23d96db6",
+        "table": "members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"members_role_check_23d96db6\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "members_role_check_23d96db6",
+          "public",
+          "\"public\".\"members\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"members_role_check_23d96db6\"",
+        "sql": "ALTER TABLE \"public\".\"members\" ADD CONSTRAINT \"members_role_check_23d96db6\" CHECK (\"role\" IN ('owner', 'support'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"members_role_check_23d96db6\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "members_role_check_23d96db6",
+          "public",
+          "\"public\".\"members\""
+        ]
+      }
+    ]
+  }
+]
