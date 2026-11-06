@@ -54,9 +54,9 @@ model Workspace {
   sources       Source[]
   chunks        Chunk[]
   agentTurns    AgentTurn[]
-  invitations      Invitation[]
-  replySuggestions ReplySuggestion[]
-  usageReports     UsageReport[]
+  invitations   Invitation[]
+  aiReplies     AiReply[]
+  usageReports  UsageReport[]
 
   @@map("workspaces")
 }
@@ -79,7 +79,6 @@ model Member {
   workspace        Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   messages         Message[]
   invitationsSent  Invitation[]
-  replySuggestions ReplySuggestion[]
 
   @@index([workspaceId])
   @@map("members")
@@ -99,6 +98,7 @@ enum HandoffReason {
   NoRelevantKnowledge = "no_relevant_knowledge"
   VisitorRequested    = "visitor_requested"
   AgentOff            = "agent_off"
+  AiReplyLimit        = "ai_reply_limit"
 }
 
 enum MessageAuthor {
@@ -151,7 +151,7 @@ model Conversation {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   visitor   Visitor   @relation(fields: [visitorId], references: [id], onDelete: Cascade)
   messages  Message[]
-  replySuggestions ReplySuggestion[]
+  aiReplies AiReply[]
 
   @@index([workspaceId, lastMessageAt])
   @@index([visitorId], where: "(state <> 'closed')", unique: true, name: "conversations_one_open_per_visitor")
@@ -175,6 +175,7 @@ model Message {
   workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   member       Member?      @relation(fields: [memberId], references: [id], onDelete: SetNull)
   agentTurns   AgentTurn[]
+  aiReplies    AiReply[]
 
   @@index([conversationId, createdAt])
   @@index([workspaceId])
@@ -316,40 +317,38 @@ model Invitation {
   @@map("invitations")
 }
 
-enum ReplySuggestionStatus {
+enum AiReplyStatus {
   @@type("pg/text@1")
   Pending   = "pending"
   Succeeded = "succeeded"
   Failed    = "failed"
 }
 
-// Succeeded rows are the usage ledger for reply suggestions.
-model ReplySuggestion {
-  id             Uuid                  @id @default(uuid(7))
-  workspaceId    Uuid                  @map("workspace_id")
-  conversationId Uuid                  @map("conversation_id")
-  // Null once the member is removed; the row still counts as usage.
-  memberId       Uuid?                 @map("member_id")
-  idempotencyKey String                @map("idempotency_key")
-  status         ReplySuggestionStatus @default(Pending)
-  body           String?
+// Succeeded rows are the usage ledger for AI replies: the agent's answers to support questions.
+model AiReply {
+  id             Uuid          @id @default(uuid(7))
+  workspaceId    Uuid          @map("workspace_id")
+  conversationId Uuid          @map("conversation_id")
+  // The visitor message answered. The idempotency key: a message counts at most once.
+  messageId      Uuid          @map("message_id")
+  status         AiReplyStatus @default(Pending)
   model          String
-  tokensIn       Int                   @default(0) @map("tokens_in")
-  tokensOut      Int                   @default(0) @map("tokens_out")
-  latencyMs      Int?                  @map("latency_ms")
+  tokensIn       Int           @default(0) @map("tokens_in")
+  tokensOut      Int           @default(0) @map("tokens_out")
+  latencyMs      Int?          @map("latency_ms")
   error          String?
-  createdAt      DateTime              @default(now()) @map("created_at")
-  finishedAt     DateTime?             @map("finished_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  finishedAt     DateTime?     @map("finished_at")
 
   workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  member       Member?      @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  message      Message      @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
-  @@unique([workspaceId, idempotencyKey])
-  @@index([workspaceId, status, createdAt])
+  @@unique([workspaceId, messageId])
+  @@index([workspaceId, status, finishedAt])
   @@index([conversationId])
-  @@index([memberId])
-  @@map("reply_suggestions")
+  @@index([messageId])
+  @@map("ai_replies")
 }
 
 // One accepted absolute total sent to Kinde Billing for a billing cycle.

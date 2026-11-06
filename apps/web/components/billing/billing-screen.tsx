@@ -63,42 +63,71 @@ function PortalButton({
   );
 }
 
-function UsageRow({ usage }: { usage: BillingOverview["replySuggestions"] }) {
+function aiRepliesCount(usage: BillingOverview["aiReplies"]): string {
+  return usage.included === null
+    ? `${usage.used}`
+    : `${usage.used} / ${usage.included}`;
+}
+
+function overageText(usage: BillingOverview["aiReplies"]): string {
+  if (!usage.overageBilled) {
+    return "When they're used up, the agent hands new questions to your team until the next cycle starts.";
+  }
+  return usage.extra > 0
+    ? `${usage.extra} extra ${usage.extra === 1 ? "AI reply is" : "AI replies are"} billed on your next invoice.`
+    : "AI replies past the included ones are billed as extra on your next invoice.";
+}
+
+function AiRepliesRow({ usage }: { usage: BillingOverview["aiReplies"] }) {
   if (!usage.available) {
     return (
-      <SettingsRow label="Reply suggestions">
+      <SettingsRow label="AI replies">
         <p className="text-sm">Not part of your plan.</p>
         <p className="text-[13px]/snug text-muted-foreground">
-          Change to a plan with reply suggestions so your team can draft replies
-          from your knowledge base.
+          The agent hands every question to your team. Change to a plan with AI
+          replies so the agent can answer from your knowledge base.
         </p>
       </SettingsRow>
     );
   }
-  const { used, included, extra } = usage;
+  const { used, included } = usage;
   return (
     <SettingsRow
-      label="Reply suggestions"
-      description="Each finished suggestion counts once. Cancelled or failed ones don't."
+      label="AI replies"
+      description="Each answer the agent gives from your knowledge base counts once. Small talk, declined messages, and handoffs don't."
     >
       <p className="text-sm">
         <span className="font-semibold tabular-nums">{used}</span>{" "}
         {included === null
-          ? `used this cycle`
+          ? "used this cycle"
           : `of ${included} included used this cycle`}
       </p>
       {included === null ? null : (
         <Progress
           value={Math.min(used, included)}
           max={Math.max(included, 1)}
-          aria-label="Included reply suggestions used"
+          aria-label="Included AI replies used"
         />
       )}
       <p className="text-[13px]/snug text-muted-foreground">
-        {extra > 0
-          ? `${extra} extra ${extra === 1 ? "suggestion is" : "suggestions are"} billed on your next invoice.`
-          : "Suggestions past the included ones are billed as extra on your next invoice."}
+        {overageText(usage)}
       </p>
+    </SettingsRow>
+  );
+}
+
+function ReplySuggestionsRow({ available }: { available: boolean }) {
+  return (
+    <SettingsRow label="Reply suggestions">
+      <p className="text-sm">
+        {available ? "Included in your plan." : "Not part of your plan."}
+      </p>
+      {available ? null : (
+        <p className="text-[13px]/snug text-muted-foreground">
+          Change to a plan with reply suggestions so your team can draft replies
+          from your knowledge base.
+        </p>
+      )}
     </SettingsRow>
   );
 }
@@ -115,6 +144,14 @@ export function BillingScreen() {
           Your workspace&apos;s plan and usage. Plans, invoices, and payments
           are handled by Kinde and Stripe.
         </p>
+        {billing.aiReplies.available ? (
+          <p className="text-sm">
+            AI replies{" "}
+            <span className="font-semibold tabular-nums">
+              {aiRepliesCount(billing.aiReplies)}
+            </span>
+          </p>
+        ) : null}
       </div>
       <SettingsSection title="Plan">
         <SettingsRow label="Current plan">
@@ -138,7 +175,8 @@ export function BillingScreen() {
         >
           <p className="text-sm tabular-nums">{cycleText(billing.cycle)}</p>
         </SettingsRow>
-        <UsageRow usage={billing.replySuggestions} />
+        <AiRepliesRow usage={billing.aiReplies} />
+        <ReplySuggestionsRow available={billing.replySuggestions.available} />
       </SettingsSection>
       <SettingsSection
         title="Payment details"

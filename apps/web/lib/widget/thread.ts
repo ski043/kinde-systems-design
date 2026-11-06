@@ -17,6 +17,7 @@ function handoffCopy(reason: HandoffReason): string {
     case "no_relevant_knowledge":
       return "We couldn't find the answer to that, so we're bringing in a person. They'll reply here shortly.";
     case "low_confidence":
+    case "ai_reply_limit":
       return "We're bringing in a person to help with this. They'll reply here shortly.";
     default: {
       const unhandled: never = reason;

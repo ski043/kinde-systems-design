@@ -20,6 +20,7 @@ export const HANDOFF_REASONS = [
   "no_relevant_knowledge",
   "visitor_requested",
   "agent_off",
+  "ai_reply_limit",
 ] as const;
 export const handoffReasonSchema = z.enum(HANDOFF_REASONS);
 export type HandoffReason = z.infer<typeof handoffReasonSchema>;

@@ -1,10 +1,5 @@
 import "server-only";
-import {
-  finishReplySuggestion,
-  getWidgetSettings,
-  listConversationHistory,
-  type ReplySuggestionResult,
-} from "@marshaldesk/db";
+import { getWidgetSettings, listConversationHistory } from "@marshaldesk/db";
 import {
   AGENT_HISTORY_MESSAGES,
   AGENT_MODELS,
@@ -20,15 +15,11 @@ import { assertNormalFinish, nonEmptyReply } from "./stream-checks";
 const FIRST_OUTPUT_TIMEOUT_MS = 20_000;
 const SUGGESTION_TIMEOUT_MS = 60_000;
 
-export const REPLY_SUGGESTION_MODEL = AGENT_MODELS.answer;
+const REPLY_SUGGESTION_MODEL = AGENT_MODELS.answer;
 
 export type ReplySuggestionRequest = {
   workspaceId: string;
   conversationId: string;
-  /** A `pending` usage ledger row this request claimed. */
-  suggestionId: string;
-  /** Called once the ledger row is `succeeded`, before `done` is sent. */
-  onSucceeded?: () => void;
 };
 
 function errorText(error: unknown): string {
@@ -36,17 +27,15 @@ function errorText(error: unknown): string {
 }
 
 /**
- * Streams a reply suggestion for the conversation's latest visitor message
- * and records the outcome on its ledger row. The row becomes `succeeded` only
- * after a normal finish with a non-empty draft, before `done` is sent, so a
- * retry with the same key gets the stored draft. Anything else, including the
- * member cancelling or `signal` aborting, records `failed`.
+ * Streams a reply suggestion for the conversation's latest visitor message.
+ * `done` is sent only after a normal finish with a non-empty draft. Every
+ * suggestion is logged with its outcome, model, tokens, and latency.
  */
 export async function* streamReplySuggestion(
   request: ReplySuggestionRequest,
   signal?: AbortSignal,
 ): AsyncGenerator<ReplySuggestionEvent, void> {
-  const { workspaceId, conversationId, suggestionId } = request;
+  const { workspaceId, conversationId } = request;
   const startedAt = performance.now();
   const controller = new AbortController();
   const abortSignal = signal
@@ -140,19 +129,8 @@ export async function* streamReplySuggestion(
     }
     if (!usage) throw new Error("The draft stream ended without finishing");
     const body = nonEmptyReply(text);
-
-    succeeded = await finishReplySuggestion(workspaceId, suggestionId, {
-      status: "succeeded",
-      body,
-      tokensIn,
-      tokensOut,
-      latencyMs: performance.now() - startedAt,
-    });
-    if (!succeeded) {
-      throw new Error(`Reply suggestion ${suggestionId} was no longer pending`);
-    }
-    request.onSucceeded?.();
-    yield { type: "done", body, replayed: false };
+    succeeded = true;
+    yield { type: "done", body };
   } catch (error) {
     failure = errorText(timeoutError ?? error);
     throw timeoutError ?? error;
@@ -161,29 +139,9 @@ export async function* streamReplySuggestion(
     clearTimeout(overallTimer);
     // Reached without an error when the member closed the stream mid-draft.
     controller.abort();
-    if (!succeeded) {
-      failure ??= "The member cancelled the draft";
-      const failed: ReplySuggestionResult = {
-        status: "failed",
-        error: failure,
-        tokensIn,
-        tokensOut,
-        latencyMs: performance.now() - startedAt,
-      };
-      await finishReplySuggestion(workspaceId, suggestionId, failed).catch(
-        (error: unknown) => {
-          console.error(
-            JSON.stringify({
-              event: "reply_suggestion_log_failed",
-              suggestionId,
-              error: errorText(error),
-            }),
-          );
-        },
-      );
-    }
+    if (!succeeded) failure ??= "The member cancelled the draft";
     console.info(
-      `[suggestion] conversation=${conversationId.slice(-8)} suggestion=${suggestionId.slice(-8)} outcome=${succeeded ? "succeeded" : "failed"} model=${REPLY_SUGGESTION_MODEL.id} tokensIn=${tokensIn} tokensOut=${tokensOut} totalMs=${Math.round(performance.now() - startedAt)}${failure ? ` error=${JSON.stringify(failure)}` : ""}`,
+      `[suggestion] conversation=${conversationId.slice(-8)} outcome=${succeeded ? "succeeded" : "failed"} model=${REPLY_SUGGESTION_MODEL.id} tokensIn=${tokensIn} tokensOut=${tokensOut} totalMs=${Math.round(performance.now() - startedAt)}${failure ? ` error=${JSON.stringify(failure)}` : ""}`,
     );
   }
 }

@@ -19,13 +19,8 @@ const RETRY_DELAY_MS = 800;
 /** What `suggestReply` can throw: a contract error, or anything else (network, server). */
 type SuggestError = ORPCErrorFromErrorMap<typeof suggestReplyErrors> | Error;
 
-/**
- * A dropped connection, or the server still finishing the attempt it lost.
- * Retrying with the same idempotency key either resumes from a `failed` row or
- * returns the draft that already succeeded, so nothing counts twice.
- */
+/** A dropped connection or a network error, not an answer from the server. */
 function isRetryable(error: SuggestError): boolean {
-  if (isDefinedError(error)) return error.code === "SUGGESTION_IN_PROGRESS";
   return !(error instanceof ORPCError);
 }
 
@@ -46,9 +41,8 @@ function wait(ms: number, signal: AbortSignal): Promise<void> {
 }
 
 /**
- * Streams a reply suggestion into the draft through `onDraft`. Each call is
- * one click with its own idempotency key. A cancelled or failed suggestion
- * puts back the draft it started from, since only a finished one counts.
+ * Streams a reply suggestion into the draft through `onDraft`. A cancelled or
+ * failed suggestion puts back the draft it started from.
  */
 export function useReplySuggestion(
   conversationId: string,
@@ -64,13 +58,12 @@ export function useReplySuggestion(
     const controller = new AbortController();
     controllerRef.current = controller;
     setStatus({ kind: "streaming" });
-    const idempotencyKey = crypto.randomUUID();
     const prefix = draft.trim() === "" ? "" : `${draft.trimEnd()}\n\n`;
 
     for (let attempt = 0; ; attempt++) {
       try {
         const events = await client.inbox.suggestReply(
-          { conversationId, idempotencyKey },
+          { conversationId },
           { signal: controller.signal },
         );
         let text = "";

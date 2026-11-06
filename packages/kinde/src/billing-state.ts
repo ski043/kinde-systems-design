@@ -1,7 +1,10 @@
 import type { WorkspaceRecord } from "@marshaldesk/db";
 import { listAgreements, listEntitlements } from "./billing-api";
 
-/** The Kinde feature key of reply suggestions, on every plan that includes them. */
+/** The metered Kinde feature key of AI replies: the agent's answers to visitors. */
+export const AI_REPLIES_FEATURE = "ai_replies";
+
+/** The unmetered Kinde feature key of reply suggestions, on the plans that include them. */
 export const REPLY_SUGGESTIONS_FEATURE = "reply_suggestions";
 
 export type BillingCycle = {
@@ -11,9 +14,14 @@ export type BillingCycle = {
   source: "kinde" | "calendar_month";
 };
 
-export type ReplySuggestionsAllowance = {
-  /** Units the plan includes each cycle, past which usage is billed as extra. Null: no limit set. */
+export type AiRepliesAllowance = {
+  /** Units the plan includes each cycle. Null: no limit set. */
   included: number | null;
+  /**
+   * True: replies past `included` are billed per unit. False: the plan has no
+   * price for the feature, so `included` is a hard cap.
+   */
+  overageBilled: boolean;
 };
 
 export type WorkspaceBilling =
@@ -23,8 +31,9 @@ export type WorkspaceBilling =
       plan: { code: string; name: string };
       agreementId: string;
       cycle: BillingCycle;
-      /** Null when the plan doesn't include reply suggestions. */
-      replySuggestions: ReplySuggestionsAllowance | null;
+      /** Null when the plan doesn't include AI replies. */
+      aiReplies: AiRepliesAllowance | null;
+      replySuggestions: boolean;
     };
 
 function calendarMonth(now: Date): BillingCycle {
@@ -65,13 +74,20 @@ async function loadBilling(customerId: string): Promise<WorkspaceBilling> {
   const plan = entitlements.plans.find(
     (candidate) => candidate.code === agreement.planCode,
   ) ?? { code: agreement.planCode, name: agreement.planCode };
-  const included = entitlements.features.get(REPLY_SUGGESTIONS_FEATURE);
+  // Kinde has no hard-cap flag: a metered feature without a unit price is capped.
+  const aiReplies = entitlements.features.get(AI_REPLIES_FEATURE);
   return {
     kind: "subscribed",
     plan,
     agreementId: agreement.id,
     cycle,
-    replySuggestions: included === undefined ? null : { included },
+    aiReplies: aiReplies
+      ? {
+          included: aiReplies.max,
+          overageBilled: (aiReplies.unitAmount ?? 0) > 0,
+        }
+      : null,
+    replySuggestions: entitlements.features.has(REPLY_SUGGESTIONS_FEATURE),
   };
 }
 
@@ -85,9 +101,10 @@ const cache = new Map<
 >();
 
 /**
- * The workspace's plan, current agreement, billing cycle, and reply
- * suggestion allowance, from Kinde Billing. Cached per billing customer for up
- * to a minute, unless `fresh` or a webhook marked it changed since.
+ * The workspace's plan, current agreement, billing cycle, and features, from
+ * Kinde Billing. Cached per billing customer for up to a minute, unless
+ * `fresh` or a webhook marked it changed since. When Kinde can't be reached,
+ * a call that isn't `fresh` gets the last state it returned, however old.
  */
 export async function getWorkspaceBilling(
   workspace: Pick<
@@ -110,7 +127,12 @@ export async function getWorkspaceBilling(
   ) {
     return cached.billing;
   }
-  const billing = await loadBilling(customerId);
-  cache.set(customerId, { billing, fetchedAt: now });
-  return billing;
+  try {
+    const billing = await loadBilling(customerId);
+    cache.set(customerId, { billing, fetchedAt: now });
+    return billing;
+  } catch (error) {
+    if (cached && !options.fresh) return cached.billing;
+    throw error;
+  }
 }

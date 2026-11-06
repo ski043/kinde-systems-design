@@ -1,0 +1,570 @@
+[
+  {
+    "id": "dropCheckConstraint.agent_turns.agent_turns_handoff_reason_check_ae20b9e1",
+    "label": "Drop check constraint \"agent_turns_handoff_reason_check_ae20b9e1\" on \"agent_turns\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "agent_turns_handoff_reason_check_ae20b9e1",
+        "table": "agent_turns"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"agent_turns_handoff_reason_check_ae20b9e1\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "agent_turns_handoff_reason_check_ae20b9e1",
+          "public",
+          "\"public\".\"agent_turns\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"agent_turns_handoff_reason_check_ae20b9e1\"",
+        "sql": "ALTER TABLE \"public\".\"agent_turns\" DROP CONSTRAINT \"agent_turns_handoff_reason_check_ae20b9e1\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"agent_turns_handoff_reason_check_ae20b9e1\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "agent_turns_handoff_reason_check_ae20b9e1",
+          "public",
+          "\"public\".\"agent_turns\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropCheckConstraint.conversations.conversations_handoff_reason_check_ae20b9e1",
+    "label": "Drop check constraint \"conversations_handoff_reason_check_ae20b9e1\" on \"conversations\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "conversations_handoff_reason_check_ae20b9e1",
+        "table": "conversations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"conversations_handoff_reason_check_ae20b9e1\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "conversations_handoff_reason_check_ae20b9e1",
+          "public",
+          "\"public\".\"conversations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"conversations_handoff_reason_check_ae20b9e1\"",
+        "sql": "ALTER TABLE \"public\".\"conversations\" DROP CONSTRAINT \"conversations_handoff_reason_check_ae20b9e1\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"conversations_handoff_reason_check_ae20b9e1\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "conversations_handoff_reason_check_ae20b9e1",
+          "public",
+          "\"public\".\"conversations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropTable.reply_suggestions",
+    "label": "Drop table \"reply_suggestions\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "reply_suggestions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"reply_suggestions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"reply_suggestions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop table \"reply_suggestions\"",
+        "sql": "DROP TABLE \"public\".\"reply_suggestions\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"reply_suggestions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"reply_suggestions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.ai_replies",
+    "label": "Create table \"ai_replies\"",
+    "summary": "Creates table \"ai_replies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ai_replies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ai_replies\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ai_replies\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ai_replies\"",
+        "sql": "CREATE TABLE \"public\".\"ai_replies\" (\n  \"conversation_id\" uuid NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"error\" text,\n  \"finished_at\" timestamptz,\n  \"id\" uuid NOT NULL,\n  \"latency_ms\" int4,\n  \"message_id\" uuid NOT NULL,\n  \"model\" text NOT NULL,\n  \"status\" text DEFAULT 'pending' NOT NULL,\n  \"tokens_in\" int4 DEFAULT 0 NOT NULL,\n  \"tokens_out\" int4 DEFAULT 0 NOT NULL,\n  \"workspace_id\" uuid NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"ai_replies_status_check_ff8e7f67\" CHECK (\"status\" IN ('pending', 'succeeded', 'failed'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ai_replies\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ai_replies\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.agent_turns.agent_turns_handoff_reason_check_461dd71a",
+    "label": "Add check constraint \"agent_turns_handoff_reason_check_461dd71a\" on \"agent_turns\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "agent_turns_handoff_reason_check_461dd71a",
+        "table": "agent_turns"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"agent_turns_handoff_reason_check_461dd71a\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "agent_turns_handoff_reason_check_461dd71a",
+          "public",
+          "\"public\".\"agent_turns\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"agent_turns_handoff_reason_check_461dd71a\"",
+        "sql": "ALTER TABLE \"public\".\"agent_turns\" ADD CONSTRAINT \"agent_turns_handoff_reason_check_461dd71a\" CHECK (\"handoff_reason\" IN ('low_confidence', 'no_relevant_knowledge', 'visitor_requested', 'agent_off', 'ai_reply_limit'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"agent_turns_handoff_reason_check_461dd71a\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "agent_turns_handoff_reason_check_461dd71a",
+          "public",
+          "\"public\".\"agent_turns\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.ai_replies.ai_replies_workspace_id_message_id_key",
+    "label": "Add unique constraint on \"ai_replies\" (workspace_id, message_id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "ai_replies_workspace_id_message_id_key",
+        "table": "ai_replies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"ai_replies_workspace_id_message_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ai_replies_workspace_id_message_id_key",
+          "public",
+          "\"public\".\"ai_replies\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"ai_replies_workspace_id_message_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"ai_replies\" ADD CONSTRAINT \"ai_replies_workspace_id_message_id_key\" UNIQUE (\"workspace_id\", \"message_id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"ai_replies_workspace_id_message_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ai_replies_workspace_id_message_id_key",
+          "public",
+          "\"public\".\"ai_replies\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.conversations.conversations_handoff_reason_check_461dd71a",
+    "label": "Add check constraint \"conversations_handoff_reason_check_461dd71a\" on \"conversations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "conversations_handoff_reason_check_461dd71a",
+        "table": "conversations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"conversations_handoff_reason_check_461dd71a\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "conversations_handoff_reason_check_461dd71a",
+          "public",
+          "\"public\".\"conversations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"conversations_handoff_reason_check_461dd71a\"",
+        "sql": "ALTER TABLE \"public\".\"conversations\" ADD CONSTRAINT \"conversations_handoff_reason_check_461dd71a\" CHECK (\"handoff_reason\" IN ('low_confidence', 'no_relevant_knowledge', 'visitor_requested', 'agent_off', 'ai_reply_limit'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"conversations_handoff_reason_check_461dd71a\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "conversations_handoff_reason_check_461dd71a",
+          "public",
+          "\"public\".\"conversations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ai_replies.ai_replies_conversation_id_idx_0c3639df",
+    "label": "Create index \"ai_replies_conversation_id_idx_0c3639df\" on \"ai_replies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ai_replies_conversation_id_idx_0c3639df",
+        "table": "ai_replies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ai_replies_conversation_id_idx_0c3639df\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ai_replies_conversation_id_idx_0c3639df\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ai_replies_conversation_id_idx_0c3639df\"",
+        "sql": "CREATE INDEX \"ai_replies_conversation_id_idx_0c3639df\" ON \"public\".\"ai_replies\" (\"conversation_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ai_replies_conversation_id_idx_0c3639df\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ai_replies_conversation_id_idx_0c3639df\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ai_replies.ai_replies_message_id_idx_8a7ff1ba",
+    "label": "Create index \"ai_replies_message_id_idx_8a7ff1ba\" on \"ai_replies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ai_replies_message_id_idx_8a7ff1ba",
+        "table": "ai_replies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ai_replies_message_id_idx_8a7ff1ba\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ai_replies_message_id_idx_8a7ff1ba\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ai_replies_message_id_idx_8a7ff1ba\"",
+        "sql": "CREATE INDEX \"ai_replies_message_id_idx_8a7ff1ba\" ON \"public\".\"ai_replies\" (\"message_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ai_replies_message_id_idx_8a7ff1ba\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ai_replies_message_id_idx_8a7ff1ba\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ai_replies.ai_replies_workspace_id_idx_90a9f461",
+    "label": "Create index \"ai_replies_workspace_id_idx_90a9f461\" on \"ai_replies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ai_replies_workspace_id_idx_90a9f461",
+        "table": "ai_replies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ai_replies_workspace_id_idx_90a9f461\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ai_replies_workspace_id_idx_90a9f461\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ai_replies_workspace_id_idx_90a9f461\"",
+        "sql": "CREATE INDEX \"ai_replies_workspace_id_idx_90a9f461\" ON \"public\".\"ai_replies\" (\"workspace_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ai_replies_workspace_id_idx_90a9f461\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ai_replies_workspace_id_idx_90a9f461\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ai_replies.ai_replies_workspace_id_status_finished_at_idx_73239375",
+    "label": "Create index \"ai_replies_workspace_id_status_finished_at_idx_73239375\" on \"ai_replies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ai_replies_workspace_id_status_finished_at_idx_73239375",
+        "table": "ai_replies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ai_replies_workspace_id_status_finished_at_idx_73239375\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ai_replies_workspace_id_status_finished_at_idx_73239375\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ai_replies_workspace_id_status_finished_at_idx_73239375\"",
+        "sql": "CREATE INDEX \"ai_replies_workspace_id_status_finished_at_idx_73239375\" ON \"public\".\"ai_replies\" (\"workspace_id\", \"status\", \"finished_at\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ai_replies_workspace_id_status_finished_at_idx_73239375\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ai_replies_workspace_id_status_finished_at_idx_73239375\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ai_replies.ai_replies_workspace_id_fkey",
+    "label": "Add foreign key \"ai_replies_workspace_id_fkey\" on \"ai_replies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ai_replies_workspace_id_fkey",
+        "table": "ai_replies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ai_replies_workspace_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ai_replies_workspace_id_fkey",
+          "public",
+          "\"public\".\"ai_replies\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ai_replies_workspace_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ai_replies\"\nADD CONSTRAINT \"ai_replies_workspace_id_fkey\"\nFOREIGN KEY (\"workspace_id\")\nREFERENCES \"public\".\"workspaces\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ai_replies_workspace_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ai_replies_workspace_id_fkey",
+          "public",
+          "\"public\".\"ai_replies\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ai_replies.ai_replies_conversation_id_fkey",
+    "label": "Add foreign key \"ai_replies_conversation_id_fkey\" on \"ai_replies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ai_replies_conversation_id_fkey",
+        "table": "ai_replies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ai_replies_conversation_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ai_replies_conversation_id_fkey",
+          "public",
+          "\"public\".\"ai_replies\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ai_replies_conversation_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ai_replies\"\nADD CONSTRAINT \"ai_replies_conversation_id_fkey\"\nFOREIGN KEY (\"conversation_id\")\nREFERENCES \"public\".\"conversations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ai_replies_conversation_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ai_replies_conversation_id_fkey",
+          "public",
+          "\"public\".\"ai_replies\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ai_replies.ai_replies_message_id_fkey",
+    "label": "Add foreign key \"ai_replies_message_id_fkey\" on \"ai_replies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ai_replies_message_id_fkey",
+        "table": "ai_replies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ai_replies_message_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ai_replies_message_id_fkey",
+          "public",
+          "\"public\".\"ai_replies\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ai_replies_message_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ai_replies\"\nADD CONSTRAINT \"ai_replies_message_id_fkey\"\nFOREIGN KEY (\"message_id\")\nREFERENCES \"public\".\"messages\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ai_replies_message_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ai_replies_message_id_fkey",
+          "public",
+          "\"public\".\"ai_replies\""
+        ]
+      }
+    ]
+  }
+]

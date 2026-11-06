@@ -98,7 +98,7 @@ export const inboxContract = {
         path: "/conversations/{conversationId}/reply-suggestions",
         summary: "Stream a reply suggestion for an open conversation",
         description:
-          "Streams the draft to the calling member only, as server-sent events. Only a finished draft counts toward the plan's allowance. Retrying with the same `idempotencyKey` returns the finished draft again without counting it twice.",
+          "Streams the draft to the calling member only, as server-sent events. Needs `suggestions:create` and a plan that includes reply suggestions.",
         tags: ["Inbox"],
       }),
     )

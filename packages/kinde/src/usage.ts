@@ -1,5 +1,5 @@
 import {
-  countSucceededReplySuggestions,
+  countSucceededAiReplies,
   findLatestUsageReport,
   getWorkspace,
   listWorkspacesWithRecentUsage,
@@ -9,8 +9,8 @@ import {
 } from "@marshaldesk/db";
 import { getMeterUsage, recordAbsoluteMeterUsage } from "./billing-api";
 import {
+  AI_REPLIES_FEATURE,
   getWorkspaceBilling,
-  REPLY_SUGGESTIONS_FEATURE,
   type BillingCycle,
 } from "./billing-state";
 
@@ -18,11 +18,12 @@ type MeteredWorkspace = {
   workspace: WorkspaceRecord;
   agreementId: string;
   cycle: BillingCycle;
-  /** Succeeded reply suggestions in the cycle: the usage ledger's total. */
+  /** Succeeded AI replies in the cycle: the usage ledger's total. */
   ledgerTotal: number;
 };
 
-export type UsageSkipReason = "not_subscribed" | "not_on_plan";
+/** `not_billed`: the plan caps AI replies instead of billing extra ones, so Kinde has nothing to charge. */
+export type UsageSkipReason = "not_subscribed" | "not_on_plan" | "not_billed";
 
 /** Resolves the workspace's agreement and ledger total. Call inside the workspace's usage lock. */
 async function meter(
@@ -33,8 +34,9 @@ async function meter(
   if (!workspace) throw new Error(`Workspace ${workspaceId} doesn't exist`);
   const billing = await getWorkspaceBilling(workspace, options);
   if (billing.kind === "unsubscribed") return "not_subscribed";
-  if (!billing.replySuggestions) return "not_on_plan";
-  const ledgerTotal = await countSucceededReplySuggestions(workspaceId, {
+  if (!billing.aiReplies) return "not_on_plan";
+  if (!billing.aiReplies.overageBilled) return "not_billed";
+  const ledgerTotal = await countSucceededAiReplies(workspaceId, {
     from: billing.cycle.start,
     to: billing.cycle.end,
   });
@@ -49,11 +51,11 @@ async function meter(
 async function sendTotal(metered: MeteredWorkspace): Promise<number | null> {
   const recorded = await recordAbsoluteMeterUsage({
     agreementId: metered.agreementId,
-    featureCode: REPLY_SUGGESTIONS_FEATURE,
+    featureCode: AI_REPLIES_FEATURE,
     total: metered.ledgerTotal,
   });
   await recordUsageReport(metered.workspace.id, {
-    feature: REPLY_SUGGESTIONS_FEATURE,
+    feature: AI_REPLIES_FEATURE,
     kindeAgreementId: metered.agreementId,
     cycleStart: metered.cycle.start,
     cycleEnd: metered.cycle.end,
@@ -79,13 +81,13 @@ export type UsageReportOutcome =
   | { kind: "skipped"; reason: UsageSkipReason | "nothing_used" };
 
 /**
- * Reports the workspace's reply suggestion total for its current billing
- * cycle to Kinde, as an absolute value from the usage ledger (PRD S-8). One
+ * Reports the workspace's AI reply total for its current billing cycle to
+ * Kinde, as an absolute value from the usage ledger. One
  * report per workspace runs at a time, and each counts the ledger only once it
  * holds the lock, so a later report always carries a total at least as new as
  * an earlier one, and a repeated report can't double count.
  */
-export async function reportReplySuggestionUsage(
+export async function reportAiReplyUsage(
   workspaceId: string,
 ): Promise<UsageReportOutcome> {
   return withAdvisoryLock("usage_report", workspaceId, async () => {
@@ -97,7 +99,7 @@ export async function reportReplySuggestionUsage(
       return { kind: "skipped", reason: "nothing_used" };
     }
     const last = await findLatestUsageReport(workspaceId, {
-      feature: REPLY_SUGGESTIONS_FEATURE,
+      feature: AI_REPLIES_FEATURE,
       kindeAgreementId: metered.agreementId,
       cycleStart: metered.cycle.start,
     });
@@ -134,7 +136,7 @@ async function reconcileWorkspace(
       return { kind: "skipped", reason: metered };
     const { currentUsage: kindeTotal } = await getMeterUsage(
       metered.agreementId,
-      REPLY_SUGGESTIONS_FEATURE,
+      AI_REPLIES_FEATURE,
     );
     if (kindeTotal === metered.ledgerTotal) {
       return { kind: "match", total: kindeTotal };
@@ -160,10 +162,10 @@ async function reconcileWorkspace(
 /**
  * Compares each recently active workspace's ledger total with the usage Kinde
  * recorded for the current cycle, and reports the ledger's total again where
- * they differ (PRD S-9). Workspaces without recent usage make no Kinde calls,
+ * they differ. Workspaces without recent usage make no Kinde calls,
  * which keeps M2M token use low.
  */
-export async function reconcileReplySuggestionUsage(
+export async function reconcileAiReplyUsage(
   now: Date = new Date(),
 ): Promise<ReconcileResult[]> {
   const since = new Date(now.getTime() - RECENT_USAGE_DAYS * 86_400_000);

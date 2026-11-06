@@ -79,6 +79,8 @@ export function handoffReasonLabel(reason: HandoffReason): string {
       return "The visitor asked for a person";
     case "agent_off":
       return "The agent is off";
+    case "ai_reply_limit":
+      return "The plan's AI replies for this billing cycle are used up";
     default: {
       const unhandled: never = reason;
       throw new Error(`Unhandled handoff reason: ${String(unhandled)}`);

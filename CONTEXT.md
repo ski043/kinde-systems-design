@@ -119,13 +119,17 @@ What a workspace has bought: Free or Pro. It decides which features are availabl
 _Avoid_: Tier, subscription, package
 
 **Entitlement**:
-What a workspace's plan allows right now, such as reply suggestions and how many are left this billing cycle.
+What a workspace's plan allows right now, such as reply suggestions and how many AI replies are left this billing cycle.
 _Avoid_: Quota, limit, feature flag
 
+**AI reply**:
+An answer the agent gives a visitor from the knowledge base. It is the metered unit: only a completed answer counts. Declines, small talk, handoffs, and failures don't. On Free there is a monthly maximum. On Pro, replies past the included amount are billed.
+_Avoid_: Bot message, AI message
+
 **Reply suggestion**:
-A draft reply the AI writes for a member in an open conversation. It goes only to that member, who edits it and sends it like any reply. The visitor never sees it.
+A draft reply the AI writes for a member in an open conversation. It goes only to that member, who edits it and sends it like any reply. The visitor never sees it. It is unmetered and only on Pro.
 _Avoid_: Suggested reply, AI draft
 
 **Usage ledger**:
-The app's own record of billable events, one row per reply suggestion. Only suggestions that finished successfully count. It is the source for what is reported to billing.
+The app's own record of billable events, one row per visitor message the agent answers. Only AI replies that finished successfully count. It is the source for what is reported to billing.
 _Avoid_: Usage log, meter, counter

@@ -4,13 +4,9 @@ import { getWorkspaceBilling } from "@marshaldesk/kinde";
 
 export type EntitledFeature = "reply_suggestions";
 
-/**
- * Usage past a plan's included units is billed as extra, never blocked: Kinde
- * accepts meter usage above the grant and bills it on the next invoice.
- */
 export type Entitlement = { kind: "not_included" } | { kind: "included" };
 
-/** What the workspace's plan in Kinde Billing allows for `feature` right now. */
+/** Whether the workspace's plan in Kinde Billing includes the unmetered `feature`. */
 export async function checkEntitlement(
   workspaceId: string,
   feature: EntitledFeature,

@@ -14,8 +14,7 @@ export const billingContract = {
       openapi({
         method: "GET",
         path: "/billing",
-        summary:
-          "Get the workspace's plan, billing cycle, and reply suggestion usage",
+        summary: "Get the workspace's plan, billing cycle, and AI reply usage",
         description:
           "Reads the plan from Kinde Billing on every call, so it reflects a plan change made in the portal right away. Needs `billing:manage`.",
         tags: ["Billing"],

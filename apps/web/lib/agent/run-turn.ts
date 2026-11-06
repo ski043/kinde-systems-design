@@ -2,6 +2,8 @@ import "server-only";
 import { setTimeout as sleep } from "node:timers/promises";
 import {
   applyAgentOutcome,
+  claimAiReply,
+  finishAiReply,
   getConversationSummary,
   getMessagesByIds,
   getWidgetSettings,
@@ -32,6 +34,7 @@ import { z } from "zod";
 import { toMessages } from "@/lib/orpc/handlers/conversation-mappers";
 import { publishSavedChange } from "@/lib/orpc/handlers/realtime";
 import { publishConversationEvent } from "@/lib/realtime/publish";
+import { checkAiReplyAllowance, reportAiReplyUsageSafely } from "./ai-replies";
 import { classifyMessage } from "./classify";
 import { languageModel, reasoningOptions, type AgentModelSpec } from "./models";
 import {
@@ -376,6 +379,70 @@ class AgentTurn {
   }
 }
 
+/**
+ * Answers from the knowledge base as one metered AI reply. The visitor message
+ * is claimed in the usage ledger before the answer model is called, so a rerun
+ * for the same message never counts twice; only a saved answer counts.
+ */
+async function answerAsAiReply(
+  turn: AgentTurn,
+  context: RetrievedChunk[],
+): Promise<void> {
+  const { workspaceId, conversationId, visitorMessageId } = turn.request;
+  const claim = await claimAiReply(workspaceId, {
+    conversationId,
+    messageId: visitorMessageId,
+    model: AGENT_MODELS.answer.id,
+  });
+  switch (claim.kind) {
+    case "claimed":
+      break;
+    case "succeeded":
+    case "in_progress":
+      turn.note(`aiReply=${claim.kind}`);
+      turn.log.outcome = "discarded";
+      return;
+    default: {
+      const unhandled: never = claim;
+      throw new Error(`Unhandled AI reply claim: ${String(unhandled)}`);
+    }
+  }
+
+  const startedAt = performance.now();
+  const { tokensIn, tokensOut } = turn.log;
+  let failure: string | null = null;
+  try {
+    await turn.reply(
+      "answered",
+      AGENT_MODELS.answer,
+      answerSystem(turn.persona),
+      answerPrompt(turn.history, context, turn.message),
+    );
+    if (turn.log.outcome !== "answered") {
+      failure = `The turn ended as ${turn.log.outcome}`;
+    }
+  } catch (error) {
+    failure = errorText(error);
+    throw error;
+  } finally {
+    const usage = {
+      tokensIn: turn.log.tokensIn - tokensIn,
+      tokensOut: turn.log.tokensOut - tokensOut,
+      latencyMs: performance.now() - startedAt,
+    };
+    await finishAiReply(
+      workspaceId,
+      claim.aiReplyId,
+      failure === null
+        ? { status: "succeeded", ...usage }
+        : { status: "failed", error: failure, ...usage },
+    ).catch((error: unknown) => {
+      turn.log.errors.push(`AI reply ledger: ${errorText(error)}`);
+    });
+  }
+  await reportAiReplyUsageSafely(workspaceId);
+}
+
 async function answerSupportQuestion(turn: AgentTurn): Promise<void> {
   const previousQuestion =
     turn.history.findLast((message) => message.author === "visitor")?.body ??
@@ -394,12 +461,14 @@ async function answerSupportQuestion(turn: AgentTurn): Promise<void> {
     return;
   }
   turn.log.context = retrieval.relevant;
-  await turn.reply(
-    "answered",
-    AGENT_MODELS.answer,
-    answerSystem(turn.persona),
-    answerPrompt(turn.history, retrieval.relevant, turn.message),
-  );
+
+  const allowance = await checkAiReplyAllowance(turn.request.workspaceId);
+  if (allowance.kind === "denied") {
+    turn.note(`aiReplies=${allowance.reason}`);
+    await turn.handoff("ai_reply_limit");
+    return;
+  }
+  await answerAsAiReply(turn, retrieval.relevant);
 }
 
 async function respond(turn: AgentTurn, agentOn: boolean): Promise<void> {

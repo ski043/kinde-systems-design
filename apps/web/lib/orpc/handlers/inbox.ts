@@ -1,6 +1,5 @@
 import "server-only";
 import {
-  claimReplySuggestion,
   getConversation,
   getConversationSummary,
   listAgentTurns,
@@ -20,20 +19,12 @@ import {
   nextState,
   RETRIEVAL_CONTEXT_SIMILARITY,
   RETRIEVAL_MIN_SIMILARITY,
-  SuggestionInProgressError,
   type AgentTurnSummary,
   type ConversationDetail,
   type ConversationState,
   type MemberAction,
-  type ReplySuggestionEvent,
 } from "@marshaldesk/shared";
-import { reportReplySuggestionUsage } from "@marshaldesk/kinde";
-import { ORPCError } from "@orpc/server";
-import { after } from "next/server";
-import {
-  REPLY_SUGGESTION_MODEL,
-  streamReplySuggestion,
-} from "@/lib/agent/reply-suggestion";
+import { streamReplySuggestion } from "@/lib/agent/reply-suggestion";
 import {
   base,
   type BaseContext,
@@ -286,69 +277,17 @@ export const markRead = readConversations.inbox.markRead.handler(
   },
 );
 
-/** Logs instead of throwing: the reconciliation job reports a missed total later. */
-async function reportUsage(workspaceId: string): Promise<void> {
-  try {
-    await reportReplySuggestionUsage(workspaceId);
-  } catch (error) {
-    console.error(
-      JSON.stringify({
-        event: "usage.report_failed",
-        workspaceId,
-        error: error instanceof Error ? error.message : String(error),
-      }),
-    );
-  }
-}
-
-async function* replayed(
-  body: string,
-): AsyncGenerator<ReplySuggestionEvent, void> {
-  yield { type: "done", body, replayed: true };
-}
-
 // Authenticated, member, `suggestions:create`, open conversation in the
-// workspace, entitlement, then the ledger claim. Only a claimed key reaches the model.
+// workspace, then entitlement. Only a request past all of them reaches the model.
 export const suggestReply = suggestReplies.inbox.suggestReply
   .use(requireOpenConversation)
   .use(requireEntitlement("reply_suggestions"))
-  .handler(async ({ context, input, signal }) => {
-    const claim = await claimReplySuggestion(context.workspaceId, {
-      conversationId: input.conversationId,
-      memberId: context.member.id,
-      idempotencyKey: input.idempotencyKey,
-      model: REPLY_SUGGESTION_MODEL.id,
-    });
-    switch (claim.kind) {
-      case "claimed": {
-        // Reported once the response is over, never from the stream loop.
-        let succeeded = false;
-        after(async () => {
-          if (succeeded) await reportUsage(context.workspaceId);
-        });
-        return streamReplySuggestion(
-          {
-            workspaceId: context.workspaceId,
-            conversationId: input.conversationId,
-            suggestionId: claim.suggestionId,
-            onSucceeded: () => {
-              succeeded = true;
-            },
-          },
-          signal,
-        );
-      }
-      case "succeeded":
-        return replayed(claim.body);
-      case "in_progress":
-        throw new SuggestionInProgressError();
-      case "other_conversation":
-        throw new ORPCError("BAD_REQUEST", {
-          message: "This idempotency key was used for another conversation.",
-        });
-      default: {
-        const unhandled: never = claim;
-        throw new Error(`Unhandled claim: ${String(unhandled)}`);
-      }
-    }
-  });
+  .handler(({ context, input, signal }) =>
+    streamReplySuggestion(
+      {
+        workspaceId: context.workspaceId,
+        conversationId: input.conversationId,
+      },
+      signal,
+    ),
+  );

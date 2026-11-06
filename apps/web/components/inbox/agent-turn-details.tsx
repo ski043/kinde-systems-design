@@ -38,6 +38,8 @@ function handoffSentence(reason: AgentTurnSummary["handoffReason"]): string {
       return "Handed off: the visitor asked for a person";
     case "agent_off":
       return "Handed off: the agent is off";
+    case "ai_reply_limit":
+      return "Handed off: the plan's AI replies for this cycle are used up";
     case null:
       return "Handed off to you";
     default: {

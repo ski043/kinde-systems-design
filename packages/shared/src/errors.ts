@@ -70,9 +70,6 @@ export const RoleUnavailableError = error("ROLE_UNAVAILABLE", {
 export const PlanRequiredError = error("PLAN_REQUIRED", {
   message: "Reply suggestions aren't part of your workspace's plan.",
 });
-export const SuggestionInProgressError = error("SUGGESTION_IN_PROGRESS", {
-  message: "This reply suggestion is still being written.",
-});
 
 export const authenticatedErrors = {
   [UnauthorizedError.code]: UnauthorizedError,
@@ -104,7 +101,6 @@ export const suggestReplyErrors = {
   ...entitlementErrors,
   [ConversationNotFoundError.code]: ConversationNotFoundError,
   [ConversationConflictError.code]: ConversationConflictError,
-  [SuggestionInProgressError.code]: SuggestionInProgressError,
 };
 
 export const visitorErrors = {

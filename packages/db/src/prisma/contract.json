@@ -8,6 +8,10 @@
       "model": "AgentTurn",
       "namespace": "public"
     },
+    "ai_replies": {
+      "model": "AiReply",
+      "namespace": "public"
+    },
     "chunks": {
       "model": "Chunk",
       "namespace": "public"
@@ -30,10 +34,6 @@
     },
     "messages": {
       "model": "Message",
-      "namespace": "public"
-    },
-    "reply_suggestions": {
-      "model": "ReplySuggestion",
       "namespace": "public"
     },
     "sources": {
@@ -86,6 +86,23 @@
               }
             ]
           },
+          "AiReplyStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "Pending",
+                "value": "pending"
+              },
+              {
+                "name": "Succeeded",
+                "value": "succeeded"
+              },
+              {
+                "name": "Failed",
+                "value": "failed"
+              }
+            ]
+          },
           "ConversationState": {
             "codecId": "pg/text@1",
             "members": [
@@ -125,6 +142,10 @@
               {
                 "name": "AgentOff",
                 "value": "agent_off"
+              },
+              {
+                "name": "AiReplyLimit",
+                "value": "ai_reply_limit"
               }
             ]
           },
@@ -214,23 +235,6 @@
               {
                 "name": "HumanRequest",
                 "value": "human_request"
-              }
-            ]
-          },
-          "ReplySuggestionStatus": {
-            "codecId": "pg/text@1",
-            "members": [
-              {
-                "name": "Pending",
-                "value": "pending"
-              },
-              {
-                "name": "Succeeded",
-                "value": "succeeded"
-              },
-              {
-                "name": "Failed",
-                "value": "failed"
               }
             ]
           },
@@ -571,6 +575,192 @@
               "table": "agent_turns"
             }
           },
+          "AiReply": {
+            "fields": {
+              "conversationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "error": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "finishedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "latencyMs": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "messageId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "model": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "AiReplyStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "tokensIn": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "tokensOut": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "workspaceId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "conversation": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "conversationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Conversation",
+                  "namespace": "public"
+                }
+              },
+              "message": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "messageId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Message",
+                  "namespace": "public"
+                }
+              },
+              "workspace": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "workspaceId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Workspace",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "conversationId": {
+                  "column": "conversation_id"
+                },
+                "createdAt": {
+                  "column": "created_at"
+                },
+                "error": {
+                  "column": "error"
+                },
+                "finishedAt": {
+                  "column": "finished_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "latencyMs": {
+                  "column": "latency_ms"
+                },
+                "messageId": {
+                  "column": "message_id"
+                },
+                "model": {
+                  "column": "model"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "tokensIn": {
+                  "column": "tokens_in"
+                },
+                "tokensOut": {
+                  "column": "tokens_out"
+                },
+                "workspaceId": {
+                  "column": "workspace_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "ai_replies"
+            }
+          },
           "Chunk": {
             "fields": {
               "content": {
@@ -791,6 +981,21 @@
               }
             },
             "relations": {
+              "aiReplies": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "conversationId"
+                  ]
+                },
+                "to": {
+                  "model": "AiReply",
+                  "namespace": "public"
+                }
+              },
               "messages": {
                 "cardinality": "1:N",
                 "on": {
@@ -803,21 +1008,6 @@
                 },
                 "to": {
                   "model": "Message",
-                  "namespace": "public"
-                }
-              },
-              "replySuggestions": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "conversationId"
-                  ]
-                },
-                "to": {
-                  "model": "ReplySuggestion",
                   "namespace": "public"
                 }
               },
@@ -1188,21 +1378,6 @@
                   "namespace": "public"
                 }
               },
-              "replySuggestions": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "memberId"
-                  ]
-                },
-                "to": {
-                  "model": "ReplySuggestion",
-                  "namespace": "public"
-                }
-              },
               "workspace": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -1361,6 +1536,21 @@
                   "namespace": "public"
                 }
               },
+              "aiReplies": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "messageId"
+                  ]
+                },
+                "to": {
+                  "model": "AiReply",
+                  "namespace": "public"
+                }
+              },
               "conversation": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -1445,212 +1635,6 @@
               },
               "namespaceId": "public",
               "table": "messages"
-            }
-          },
-          "ReplySuggestion": {
-            "fields": {
-              "body": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "conversationId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/uuid@1",
-                  "kind": "scalar"
-                }
-              },
-              "createdAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "kind": "scalar"
-                }
-              },
-              "error": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "finishedAt": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "kind": "scalar"
-                }
-              },
-              "id": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/uuid@1",
-                  "kind": "scalar"
-                }
-              },
-              "idempotencyKey": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "latencyMs": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "memberId": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/uuid@1",
-                  "kind": "scalar"
-                }
-              },
-              "model": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "status": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                },
-                "valueSet": {
-                  "entityKind": "enum",
-                  "entityName": "ReplySuggestionStatus",
-                  "namespaceId": "public",
-                  "plane": "domain"
-                }
-              },
-              "tokensIn": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "tokensOut": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "workspaceId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/uuid@1",
-                  "kind": "scalar"
-                }
-              }
-            },
-            "relations": {
-              "conversation": {
-                "cardinality": "N:1",
-                "nullable": false,
-                "on": {
-                  "localFields": [
-                    "conversationId"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "Conversation",
-                  "namespace": "public"
-                }
-              },
-              "member": {
-                "cardinality": "N:1",
-                "nullable": true,
-                "on": {
-                  "localFields": [
-                    "memberId"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "Member",
-                  "namespace": "public"
-                }
-              },
-              "workspace": {
-                "cardinality": "N:1",
-                "nullable": false,
-                "on": {
-                  "localFields": [
-                    "workspaceId"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "Workspace",
-                  "namespace": "public"
-                }
-              }
-            },
-            "storage": {
-              "fields": {
-                "body": {
-                  "column": "body"
-                },
-                "conversationId": {
-                  "column": "conversation_id"
-                },
-                "createdAt": {
-                  "column": "created_at"
-                },
-                "error": {
-                  "column": "error"
-                },
-                "finishedAt": {
-                  "column": "finished_at"
-                },
-                "id": {
-                  "column": "id"
-                },
-                "idempotencyKey": {
-                  "column": "idempotency_key"
-                },
-                "latencyMs": {
-                  "column": "latency_ms"
-                },
-                "memberId": {
-                  "column": "member_id"
-                },
-                "model": {
-                  "column": "model"
-                },
-                "status": {
-                  "column": "status"
-                },
-                "tokensIn": {
-                  "column": "tokens_in"
-                },
-                "tokensOut": {
-                  "column": "tokens_out"
-                },
-                "workspaceId": {
-                  "column": "workspace_id"
-                }
-              },
-              "namespaceId": "public",
-              "table": "reply_suggestions"
             }
           },
           "Source": {
@@ -2234,6 +2218,21 @@
                   "namespace": "public"
                 }
               },
+              "aiReplies": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "workspaceId"
+                  ]
+                },
+                "to": {
+                  "model": "AiReply",
+                  "namespace": "public"
+                }
+              },
               "chunks": {
                 "cardinality": "1:N",
                 "on": {
@@ -2306,21 +2305,6 @@
                 },
                 "to": {
                   "model": "Message",
-                  "namespace": "public"
-                }
-              },
-              "replySuggestions": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "workspaceId"
-                  ]
-                },
-                "to": {
-                  "model": "ReplySuggestion",
                   "namespace": "public"
                 }
               },
@@ -2447,8 +2431,8 @@
                   "prefix": "agent_turns_classification_check"
                 },
                 {
-                  "expression": "\"handoff_reason\" IN ('low_confidence', 'no_relevant_knowledge', 'visitor_requested', 'agent_off')",
-                  "name": "agent_turns_handoff_reason_check_ae20b9e1",
+                  "expression": "\"handoff_reason\" IN ('low_confidence', 'no_relevant_knowledge', 'visitor_requested', 'agent_off', 'ai_reply_limit')",
+                  "name": "agent_turns_handoff_reason_check_461dd71a",
                   "prefix": "agent_turns_handoff_reason_check"
                 },
                 {
@@ -2679,6 +2663,201 @@
               },
               "uniques": []
             },
+            "ai_replies": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('pending', 'succeeded', 'failed')",
+                  "name": "ai_replies_status_check_ff8e7f67",
+                  "prefix": "ai_replies_status_check"
+                }
+              ],
+              "columns": {
+                "conversation_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "created_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "error": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "finished_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "latency_ms": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "message_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "model": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "pending"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "AiReplyStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "tokens_in": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "tokens_out": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "workspace_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "workspace_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ai_replies"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "workspaces"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "conversation_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ai_replies"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "conversations"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "message_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ai_replies"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "messages"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "conversation_id"
+                  ],
+                  "name": "ai_replies_conversation_id_idx_0c3639df",
+                  "prefix": "ai_replies_conversation_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "message_id"
+                  ],
+                  "name": "ai_replies_message_id_idx_8a7ff1ba",
+                  "prefix": "ai_replies_message_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "workspace_id"
+                  ],
+                  "name": "ai_replies_workspace_id_idx_90a9f461",
+                  "prefix": "ai_replies_workspace_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "workspace_id",
+                    "status",
+                    "finished_at"
+                  ],
+                  "name": "ai_replies_workspace_id_status_finished_at_idx_73239375",
+                  "prefix": "ai_replies_workspace_id_status_finished_at_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "workspace_id",
+                    "message_id"
+                  ]
+                }
+              ]
+            },
             "chunks": {
               "columns": {
                 "content": {
@@ -2802,8 +2981,8 @@
             "conversations": {
               "checks": [
                 {
-                  "expression": "\"handoff_reason\" IN ('low_confidence', 'no_relevant_knowledge', 'visitor_requested', 'agent_off')",
-                  "name": "conversations_handoff_reason_check_ae20b9e1",
+                  "expression": "\"handoff_reason\" IN ('low_confidence', 'no_relevant_knowledge', 'visitor_requested', 'agent_off', 'ai_reply_limit')",
+                  "name": "conversations_handoff_reason_check_461dd71a",
                   "prefix": "conversations_handoff_reason_check"
                 },
                 {
@@ -3455,211 +3634,6 @@
               },
               "uniques": []
             },
-            "reply_suggestions": {
-              "checks": [
-                {
-                  "expression": "\"status\" IN ('pending', 'succeeded', 'failed')",
-                  "name": "reply_suggestions_status_check_ff8e7f67",
-                  "prefix": "reply_suggestions_status_check"
-                }
-              ],
-              "columns": {
-                "body": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
-                },
-                "conversation_id": {
-                  "codecId": "pg/uuid@1",
-                  "nativeType": "uuid",
-                  "nullable": false
-                },
-                "created_at": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "default": {
-                    "expression": "now()",
-                    "kind": "function"
-                  },
-                  "nativeType": "timestamptz",
-                  "nullable": false
-                },
-                "error": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
-                },
-                "finished_at": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
-                  "nullable": true
-                },
-                "id": {
-                  "codecId": "pg/uuid@1",
-                  "nativeType": "uuid",
-                  "nullable": false
-                },
-                "idempotency_key": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
-                },
-                "latency_ms": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
-                "member_id": {
-                  "codecId": "pg/uuid@1",
-                  "nativeType": "uuid",
-                  "nullable": true
-                },
-                "model": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
-                },
-                "status": {
-                  "codecId": "pg/text@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": "pending"
-                  },
-                  "nativeType": "text",
-                  "nullable": false,
-                  "valueSet": {
-                    "entityKind": "valueSet",
-                    "entityName": "ReplySuggestionStatus",
-                    "namespaceId": "public",
-                    "plane": "storage"
-                  }
-                },
-                "tokens_in": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": 0
-                  },
-                  "nativeType": "int4",
-                  "nullable": false
-                },
-                "tokens_out": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": 0
-                  },
-                  "nativeType": "int4",
-                  "nullable": false
-                },
-                "workspace_id": {
-                  "codecId": "pg/uuid@1",
-                  "nativeType": "uuid",
-                  "nullable": false
-                }
-              },
-              "foreignKeys": [
-                {
-                  "onDelete": "cascade",
-                  "source": {
-                    "columns": [
-                      "workspace_id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "reply_suggestions"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "workspaces"
-                  }
-                },
-                {
-                  "onDelete": "cascade",
-                  "source": {
-                    "columns": [
-                      "conversation_id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "reply_suggestions"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "conversations"
-                  }
-                },
-                {
-                  "onDelete": "setNull",
-                  "source": {
-                    "columns": [
-                      "member_id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "reply_suggestions"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "members"
-                  }
-                }
-              ],
-              "indexes": [
-                {
-                  "columns": [
-                    "conversation_id"
-                  ],
-                  "name": "reply_suggestions_conversation_id_idx_0c3639df",
-                  "prefix": "reply_suggestions_conversation_id_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "member_id"
-                  ],
-                  "name": "reply_suggestions_member_id_idx_10d5a0e2",
-                  "prefix": "reply_suggestions_member_id_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "workspace_id"
-                  ],
-                  "name": "reply_suggestions_workspace_id_idx_90a9f461",
-                  "prefix": "reply_suggestions_workspace_id_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "workspace_id",
-                    "status",
-                    "created_at"
-                  ],
-                  "name": "reply_suggestions_workspace_id_status_created_at_idx_2539eff4",
-                  "prefix": "reply_suggestions_workspace_id_status_created_at_idx",
-                  "unique": false
-                }
-              ],
-              "primaryKey": {
-                "columns": [
-                  "id"
-                ]
-              },
-              "uniques": [
-                {
-                  "columns": [
-                    "workspace_id",
-                    "idempotency_key"
-                  ]
-                }
-              ]
-            },
             "sources": {
               "checks": [
                 {
@@ -4204,6 +4178,14 @@
                 "failed"
               ]
             },
+            "AiReplyStatus": {
+              "kind": "valueSet",
+              "values": [
+                "pending",
+                "succeeded",
+                "failed"
+              ]
+            },
             "ConversationState": {
               "kind": "valueSet",
               "values": [
@@ -4219,7 +4201,8 @@
                 "low_confidence",
                 "no_relevant_knowledge",
                 "visitor_requested",
-                "agent_off"
+                "agent_off",
+                "ai_reply_limit"
               ]
             },
             "InvitationRole": {
@@ -4263,14 +4246,6 @@
                 "human_request"
               ]
             },
-            "ReplySuggestionStatus": {
-              "kind": "valueSet",
-              "values": [
-                "pending",
-                "succeeded",
-                "failed"
-              ]
-            },
             "SourceKind": {
               "kind": "valueSet",
               "values": [
@@ -4312,10 +4287,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "5922401357cdcf861539d9441fc8139fc4e8dee3633eb8ec1eed2acacce86473"
+    "storageHash": "388637fb89cf00c77555a5f14246aa29e71d08742a49bfd414169019285eeab8"
   },
   "execution": {
-    "executionHash": "2592f8c2ecc4b146e34d403f01b2242a5c8d74d4732883bd73c7c758eb61f4a5",
+    "executionHash": "935debda65339a8609a9393807079e7911aac2a22b58c522d97498f3de852661",
     "mutations": {
       "defaults": [
         {
@@ -4325,6 +4300,17 @@
           },
           "ref": {
             "entry": "agent_turns",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "ai_replies",
             "field": "id",
             "namespace": "public"
           }
@@ -4395,17 +4381,6 @@
           },
           "ref": {
             "entry": "messages",
-            "field": "id",
-            "namespace": "public"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv7",
-            "kind": "generator"
-          },
-          "ref": {
-            "entry": "reply_suggestions",
             "field": "id",
             "namespace": "public"
           }

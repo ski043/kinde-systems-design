@@ -51,6 +51,7 @@ const entitlementsSchema = z.object({
       z.object({
         feature_code: z.string(),
         entitlement_limit_max: z.number().int().nullish(),
+        unit_amount: z.number().nullish(),
       }),
     )
     .nullish(),
@@ -59,10 +60,16 @@ const entitlementsSchema = z.object({
     .nullish(),
 });
 
+export type KindeFeatureEntitlement = {
+  /** The configured maximum, null when the plan sets none. */
+  max: number | null;
+  /** The price per unit in cents, null when the plan charges nothing for the feature. */
+  unitAmount: number | null;
+};
+
 export type KindeEntitlements = {
   plans: { code: string; name: string }[];
-  /** Feature code to its configured maximum, null when the plan sets none. */
-  features: Map<string, number | null>;
+  features: Map<string, KindeFeatureEntitlement>;
 };
 
 // Kinde reports a feature without a maximum as the largest 32-bit integer.
@@ -76,13 +83,13 @@ export async function listEntitlements(
     `/api/v1/billing/entitlements?${new URLSearchParams({ customer_id: customerId, expand: "plans", page_size: "100" })}`,
     entitlementsSchema,
   );
-  const features = new Map<string, number | null>();
+  const features = new Map<string, KindeFeatureEntitlement>();
   for (const entitlement of result.entitlements ?? []) {
     const max = entitlement.entitlement_limit_max ?? null;
-    features.set(
-      entitlement.feature_code,
-      max === null || max >= NO_LIMIT ? null : max,
-    );
+    features.set(entitlement.feature_code, {
+      max: max === null || max >= NO_LIMIT ? null : max,
+      unitAmount: entitlement.unit_amount ?? null,
+    });
   }
   return {
     plans: (result.plans ?? []).map((plan) => ({

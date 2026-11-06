@@ -142,11 +142,11 @@ export {
   type RetrievedChunk,
 } from "./knowledge";
 export {
-  claimReplySuggestion,
-  countSucceededReplySuggestions,
-  finishReplySuggestion,
-  type NewReplySuggestion,
-  type ReplySuggestionClaim,
-  type ReplySuggestionResult,
-  type ReplySuggestionStatusValue,
-} from "./reply-suggestions";
+  claimAiReply,
+  countSucceededAiReplies,
+  finishAiReply,
+  type AiReplyClaim,
+  type AiReplyResult,
+  type AiReplyStatusValue,
+  type NewAiReply,
+} from "./ai-replies";

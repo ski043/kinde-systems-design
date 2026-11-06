@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { getSource, getSourceIngestState } from "@marshaldesk/db";
-import { reconcileReplySuggestionUsage } from "@marshaldesk/kinde";
+import { reconcileAiReplyUsage } from "@marshaldesk/kinde";
 import {
   FUNCTION_ROUTES,
   parseSourceStorageKey,
@@ -162,7 +162,7 @@ async function handleSchedule(): Promise<Response> {
 }
 
 async function handleReconcileUsage(): Promise<Response> {
-  const results = await reconcileReplySuggestionUsage();
+  const results = await reconcileAiReplyUsage();
   const outcomes: Record<string, number> = {};
   for (const { outcome } of results) {
     outcomes[outcome.kind] = (outcomes[outcome.kind] ?? 0) + 1;

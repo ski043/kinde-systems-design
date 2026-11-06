@@ -55,7 +55,7 @@ export async function markBillingChanged(
 }
 
 /**
- * Workspaces with a billing customer and a reply suggestion that succeeded
+ * Workspaces with a billing customer and an AI reply that succeeded
  * since `since`: the ones whose usage the reconciliation compares. Not
  * workspace-scoped: the schedule trigger checks every workspace.
  */
@@ -68,10 +68,10 @@ export async function listWorkspacesWithRecentUsage(
     FROM workspaces w
     WHERE w.kinde_billing_customer_id IS NOT NULL
       AND EXISTS (
-        SELECT 1 FROM reply_suggestions s
-        WHERE s.workspace_id = w.id
-          AND s.status = 'succeeded'
-          AND s.finished_at >= ${since}::timestamptz)
+        SELECT 1 FROM ai_replies r
+        WHERE r.workspace_id = w.id
+          AND r.status = 'succeeded'
+          AND r.finished_at >= ${since}::timestamptz)
     ORDER BY w.id`
     .returnsRow({ workspace_id: "pg/uuid@1" })
     .build();

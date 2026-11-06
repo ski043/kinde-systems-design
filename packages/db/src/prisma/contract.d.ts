@@ -39,9 +39,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'5922401357cdcf861539d9441fc8139fc4e8dee3633eb8ec1eed2acacce86473'>;
+  StorageHashBase<'388637fb89cf00c77555a5f14246aa29e71d08742a49bfd414169019285eeab8'>;
 export type ExecutionHash =
-  ExecutionHashBase<'2592f8c2ecc4b146e34d403f01b2242a5c8d74d4732883bd73c7c758eb61f4a5'>;
+  ExecutionHashBase<'935debda65339a8609a9393807079e7911aac2a22b58c522d97498f3de852661'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -265,7 +265,12 @@ export type FieldOutputTypes = {
       readonly error: CodecTypes['pg/text@1']['output'] | null;
       readonly firstTokenMs: CodecTypes['pg/int4@1']['output'] | null;
       readonly handoffReason:
-        'low_confidence' | 'no_relevant_knowledge' | 'visitor_requested' | 'agent_off' | null;
+        | 'low_confidence'
+        | 'no_relevant_knowledge'
+        | 'visitor_requested'
+        | 'agent_off'
+        | 'ai_reply_limit'
+        | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly latencyMs: CodecTypes['pg/int4@1']['output'];
       readonly messageId: CodecTypes['pg/uuid@1']['output'];
@@ -274,6 +279,20 @@ export type FieldOutputTypes = {
       readonly replyMessageId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly scores: ReadonlyArray<CodecTypes['pg/float8@1']['output']>;
       readonly sourceIds: ReadonlyArray<CodecTypes['pg/uuid@1']['output']>;
+      readonly tokensIn: CodecTypes['pg/int4@1']['output'];
+      readonly tokensOut: CodecTypes['pg/int4@1']['output'];
+      readonly workspaceId: CodecTypes['pg/uuid@1']['output'];
+    };
+    readonly AiReply: {
+      readonly conversationId: CodecTypes['pg/uuid@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly error: CodecTypes['pg/text@1']['output'] | null;
+      readonly finishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly latencyMs: CodecTypes['pg/int4@1']['output'] | null;
+      readonly messageId: CodecTypes['pg/uuid@1']['output'];
+      readonly model: CodecTypes['pg/text@1']['output'];
+      readonly status: 'pending' | 'succeeded' | 'failed';
       readonly tokensIn: CodecTypes['pg/int4@1']['output'];
       readonly tokensOut: CodecTypes['pg/int4@1']['output'];
       readonly workspaceId: CodecTypes['pg/uuid@1']['output'];
@@ -292,7 +311,12 @@ export type FieldOutputTypes = {
       readonly closedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly handoffReason:
-        'low_confidence' | 'no_relevant_knowledge' | 'visitor_requested' | 'agent_off' | null;
+        | 'low_confidence'
+        | 'no_relevant_knowledge'
+        | 'visitor_requested'
+        | 'agent_off'
+        | 'ai_reply_limit'
+        | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly lastMessageAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly lastVisitorMessageAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -341,22 +365,6 @@ export type FieldOutputTypes = {
       readonly event: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly memberId: CodecTypes['pg/uuid@1']['output'] | null;
-      readonly workspaceId: CodecTypes['pg/uuid@1']['output'];
-    };
-    readonly ReplySuggestion: {
-      readonly body: CodecTypes['pg/text@1']['output'] | null;
-      readonly conversationId: CodecTypes['pg/uuid@1']['output'];
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly error: CodecTypes['pg/text@1']['output'] | null;
-      readonly finishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-      readonly id: CodecTypes['pg/uuid@1']['output'];
-      readonly idempotencyKey: CodecTypes['pg/text@1']['output'];
-      readonly latencyMs: CodecTypes['pg/int4@1']['output'] | null;
-      readonly memberId: CodecTypes['pg/uuid@1']['output'] | null;
-      readonly model: CodecTypes['pg/text@1']['output'];
-      readonly status: 'pending' | 'succeeded' | 'failed';
-      readonly tokensIn: CodecTypes['pg/int4@1']['output'];
-      readonly tokensOut: CodecTypes['pg/int4@1']['output'];
       readonly workspaceId: CodecTypes['pg/uuid@1']['output'];
     };
     readonly Source: {
@@ -427,7 +435,12 @@ export type FieldInputTypes = {
       readonly error: CodecTypes['pg/text@1']['input'] | null;
       readonly firstTokenMs: CodecTypes['pg/int4@1']['input'] | null;
       readonly handoffReason:
-        'low_confidence' | 'no_relevant_knowledge' | 'visitor_requested' | 'agent_off' | null;
+        | 'low_confidence'
+        | 'no_relevant_knowledge'
+        | 'visitor_requested'
+        | 'agent_off'
+        | 'ai_reply_limit'
+        | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly latencyMs: CodecTypes['pg/int4@1']['input'];
       readonly messageId: CodecTypes['pg/uuid@1']['input'];
@@ -436,6 +449,20 @@ export type FieldInputTypes = {
       readonly replyMessageId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly scores: ReadonlyArray<CodecTypes['pg/float8@1']['input']>;
       readonly sourceIds: ReadonlyArray<CodecTypes['pg/uuid@1']['input']>;
+      readonly tokensIn: CodecTypes['pg/int4@1']['input'];
+      readonly tokensOut: CodecTypes['pg/int4@1']['input'];
+      readonly workspaceId: CodecTypes['pg/uuid@1']['input'];
+    };
+    readonly AiReply: {
+      readonly conversationId: CodecTypes['pg/uuid@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly error: CodecTypes['pg/text@1']['input'] | null;
+      readonly finishedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly latencyMs: CodecTypes['pg/int4@1']['input'] | null;
+      readonly messageId: CodecTypes['pg/uuid@1']['input'];
+      readonly model: CodecTypes['pg/text@1']['input'];
+      readonly status: 'pending' | 'succeeded' | 'failed';
       readonly tokensIn: CodecTypes['pg/int4@1']['input'];
       readonly tokensOut: CodecTypes['pg/int4@1']['input'];
       readonly workspaceId: CodecTypes['pg/uuid@1']['input'];
@@ -454,7 +481,12 @@ export type FieldInputTypes = {
       readonly closedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly handoffReason:
-        'low_confidence' | 'no_relevant_knowledge' | 'visitor_requested' | 'agent_off' | null;
+        | 'low_confidence'
+        | 'no_relevant_knowledge'
+        | 'visitor_requested'
+        | 'agent_off'
+        | 'ai_reply_limit'
+        | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly lastMessageAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly lastVisitorMessageAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
@@ -503,22 +535,6 @@ export type FieldInputTypes = {
       readonly event: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly memberId: CodecTypes['pg/uuid@1']['input'] | null;
-      readonly workspaceId: CodecTypes['pg/uuid@1']['input'];
-    };
-    readonly ReplySuggestion: {
-      readonly body: CodecTypes['pg/text@1']['input'] | null;
-      readonly conversationId: CodecTypes['pg/uuid@1']['input'];
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly error: CodecTypes['pg/text@1']['input'] | null;
-      readonly finishedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
-      readonly id: CodecTypes['pg/uuid@1']['input'];
-      readonly idempotencyKey: CodecTypes['pg/text@1']['input'];
-      readonly latencyMs: CodecTypes['pg/int4@1']['input'] | null;
-      readonly memberId: CodecTypes['pg/uuid@1']['input'] | null;
-      readonly model: CodecTypes['pg/text@1']['input'];
-      readonly status: 'pending' | 'succeeded' | 'failed';
-      readonly tokensIn: CodecTypes['pg/int4@1']['input'];
-      readonly tokensOut: CodecTypes['pg/int4@1']['input'];
       readonly workspaceId: CodecTypes['pg/uuid@1']['input'];
     };
     readonly Source: {
@@ -589,7 +605,12 @@ export type StorageColumnTypes = {
       readonly error: CodecTypes['pg/text@1']['output'] | null;
       readonly first_token_ms: CodecTypes['pg/int4@1']['output'] | null;
       readonly handoff_reason:
-        'low_confidence' | 'no_relevant_knowledge' | 'visitor_requested' | 'agent_off' | null;
+        | 'low_confidence'
+        | 'no_relevant_knowledge'
+        | 'visitor_requested'
+        | 'agent_off'
+        | 'ai_reply_limit'
+        | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly latency_ms: CodecTypes['pg/int4@1']['output'];
       readonly message_id: CodecTypes['pg/uuid@1']['output'];
@@ -598,6 +619,20 @@ export type StorageColumnTypes = {
       readonly reply_message_id: CodecTypes['pg/uuid@1']['output'] | null;
       readonly scores: ReadonlyArray<CodecTypes['pg/float8@1']['output']>;
       readonly source_ids: ReadonlyArray<CodecTypes['pg/uuid@1']['output']>;
+      readonly tokens_in: CodecTypes['pg/int4@1']['output'];
+      readonly tokens_out: CodecTypes['pg/int4@1']['output'];
+      readonly workspace_id: CodecTypes['pg/uuid@1']['output'];
+    };
+    readonly ai_replies: {
+      readonly conversation_id: CodecTypes['pg/uuid@1']['output'];
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly error: CodecTypes['pg/text@1']['output'] | null;
+      readonly finished_at: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly latency_ms: CodecTypes['pg/int4@1']['output'] | null;
+      readonly message_id: CodecTypes['pg/uuid@1']['output'];
+      readonly model: CodecTypes['pg/text@1']['output'];
+      readonly status: 'pending' | 'succeeded' | 'failed';
       readonly tokens_in: CodecTypes['pg/int4@1']['output'];
       readonly tokens_out: CodecTypes['pg/int4@1']['output'];
       readonly workspace_id: CodecTypes['pg/uuid@1']['output'];
@@ -616,7 +651,12 @@ export type StorageColumnTypes = {
       readonly closed_at: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly handoff_reason:
-        'low_confidence' | 'no_relevant_knowledge' | 'visitor_requested' | 'agent_off' | null;
+        | 'low_confidence'
+        | 'no_relevant_knowledge'
+        | 'visitor_requested'
+        | 'agent_off'
+        | 'ai_reply_limit'
+        | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly last_message_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly last_visitor_message_at: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -665,22 +705,6 @@ export type StorageColumnTypes = {
       readonly event: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly member_id: CodecTypes['pg/uuid@1']['output'] | null;
-      readonly workspace_id: CodecTypes['pg/uuid@1']['output'];
-    };
-    readonly reply_suggestions: {
-      readonly body: CodecTypes['pg/text@1']['output'] | null;
-      readonly conversation_id: CodecTypes['pg/uuid@1']['output'];
-      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly error: CodecTypes['pg/text@1']['output'] | null;
-      readonly finished_at: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-      readonly id: CodecTypes['pg/uuid@1']['output'];
-      readonly idempotency_key: CodecTypes['pg/text@1']['output'];
-      readonly latency_ms: CodecTypes['pg/int4@1']['output'] | null;
-      readonly member_id: CodecTypes['pg/uuid@1']['output'] | null;
-      readonly model: CodecTypes['pg/text@1']['output'];
-      readonly status: 'pending' | 'succeeded' | 'failed';
-      readonly tokens_in: CodecTypes['pg/int4@1']['output'];
-      readonly tokens_out: CodecTypes['pg/int4@1']['output'];
       readonly workspace_id: CodecTypes['pg/uuid@1']['output'];
     };
     readonly sources: {
@@ -751,7 +775,12 @@ export type StorageColumnInputTypes = {
       readonly error: CodecTypes['pg/text@1']['input'] | null;
       readonly first_token_ms: CodecTypes['pg/int4@1']['input'] | null;
       readonly handoff_reason:
-        'low_confidence' | 'no_relevant_knowledge' | 'visitor_requested' | 'agent_off' | null;
+        | 'low_confidence'
+        | 'no_relevant_knowledge'
+        | 'visitor_requested'
+        | 'agent_off'
+        | 'ai_reply_limit'
+        | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly latency_ms: CodecTypes['pg/int4@1']['input'];
       readonly message_id: CodecTypes['pg/uuid@1']['input'];
@@ -760,6 +789,20 @@ export type StorageColumnInputTypes = {
       readonly reply_message_id: CodecTypes['pg/uuid@1']['input'] | null;
       readonly scores: ReadonlyArray<CodecTypes['pg/float8@1']['input']>;
       readonly source_ids: ReadonlyArray<CodecTypes['pg/uuid@1']['input']>;
+      readonly tokens_in: CodecTypes['pg/int4@1']['input'];
+      readonly tokens_out: CodecTypes['pg/int4@1']['input'];
+      readonly workspace_id: CodecTypes['pg/uuid@1']['input'];
+    };
+    readonly ai_replies: {
+      readonly conversation_id: CodecTypes['pg/uuid@1']['input'];
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly error: CodecTypes['pg/text@1']['input'] | null;
+      readonly finished_at: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly latency_ms: CodecTypes['pg/int4@1']['input'] | null;
+      readonly message_id: CodecTypes['pg/uuid@1']['input'];
+      readonly model: CodecTypes['pg/text@1']['input'];
+      readonly status: 'pending' | 'succeeded' | 'failed';
       readonly tokens_in: CodecTypes['pg/int4@1']['input'];
       readonly tokens_out: CodecTypes['pg/int4@1']['input'];
       readonly workspace_id: CodecTypes['pg/uuid@1']['input'];
@@ -778,7 +821,12 @@ export type StorageColumnInputTypes = {
       readonly closed_at: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly handoff_reason:
-        'low_confidence' | 'no_relevant_knowledge' | 'visitor_requested' | 'agent_off' | null;
+        | 'low_confidence'
+        | 'no_relevant_knowledge'
+        | 'visitor_requested'
+        | 'agent_off'
+        | 'ai_reply_limit'
+        | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly last_message_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly last_visitor_message_at: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
@@ -827,22 +875,6 @@ export type StorageColumnInputTypes = {
       readonly event: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly member_id: CodecTypes['pg/uuid@1']['input'] | null;
-      readonly workspace_id: CodecTypes['pg/uuid@1']['input'];
-    };
-    readonly reply_suggestions: {
-      readonly body: CodecTypes['pg/text@1']['input'] | null;
-      readonly conversation_id: CodecTypes['pg/uuid@1']['input'];
-      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly error: CodecTypes['pg/text@1']['input'] | null;
-      readonly finished_at: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
-      readonly id: CodecTypes['pg/uuid@1']['input'];
-      readonly idempotency_key: CodecTypes['pg/text@1']['input'];
-      readonly latency_ms: CodecTypes['pg/int4@1']['input'] | null;
-      readonly member_id: CodecTypes['pg/uuid@1']['input'] | null;
-      readonly model: CodecTypes['pg/text@1']['input'];
-      readonly status: 'pending' | 'succeeded' | 'failed';
-      readonly tokens_in: CodecTypes['pg/int4@1']['input'];
-      readonly tokens_out: CodecTypes['pg/int4@1']['input'];
       readonly workspace_id: CodecTypes['pg/uuid@1']['input'];
     };
     readonly sources: {
@@ -913,7 +945,12 @@ export namespace Models {
     error: CodecTypes['pg/text@1']['output'] | null;
     firstTokenMs: CodecTypes['pg/int4@1']['output'] | null;
     handoffReason:
-      'low_confidence' | 'no_relevant_knowledge' | 'visitor_requested' | 'agent_off' | null;
+      | 'low_confidence'
+      | 'no_relevant_knowledge'
+      | 'visitor_requested'
+      | 'agent_off'
+      | 'ai_reply_limit'
+      | null;
     id: CodecTypes['pg/uuid@1']['output'];
     latencyMs: CodecTypes['pg/int4@1']['output'];
     messageId: CodecTypes['pg/uuid@1']['output'];
@@ -928,6 +965,24 @@ export namespace Models {
     message: public_Message;
     workspace: public_Workspace;
     readonly [RelationKeys]?: 'message' | 'workspace';
+  };
+  export type public_AiReply = {
+    conversationId: CodecTypes['pg/uuid@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    error: CodecTypes['pg/text@1']['output'] | null;
+    finishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    id: CodecTypes['pg/uuid@1']['output'];
+    latencyMs: CodecTypes['pg/int4@1']['output'] | null;
+    messageId: CodecTypes['pg/uuid@1']['output'];
+    model: CodecTypes['pg/text@1']['output'];
+    status: 'pending' | 'succeeded' | 'failed';
+    tokensIn: CodecTypes['pg/int4@1']['output'];
+    tokensOut: CodecTypes['pg/int4@1']['output'];
+    workspaceId: CodecTypes['pg/uuid@1']['output'];
+    conversation: public_Conversation;
+    message: public_Message;
+    workspace: public_Workspace;
+    readonly [RelationKeys]?: 'conversation' | 'message' | 'workspace';
   };
   export type public_Chunk = {
     content: CodecTypes['pg/text@1']['output'];
@@ -946,7 +1001,12 @@ export namespace Models {
     closedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     handoffReason:
-      'low_confidence' | 'no_relevant_knowledge' | 'visitor_requested' | 'agent_off' | null;
+      | 'low_confidence'
+      | 'no_relevant_knowledge'
+      | 'visitor_requested'
+      | 'agent_off'
+      | 'ai_reply_limit'
+      | null;
     id: CodecTypes['pg/uuid@1']['output'];
     lastMessageAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     lastVisitorMessageAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -955,11 +1015,11 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     visitorId: CodecTypes['pg/uuid@1']['output'];
     workspaceId: CodecTypes['pg/uuid@1']['output'];
+    aiReplies: public_AiReply[];
     messages: public_Message[];
-    replySuggestions: public_ReplySuggestion[];
     visitor: public_Visitor;
     workspace: public_Workspace;
-    readonly [RelationKeys]?: 'messages' | 'replySuggestions' | 'visitor' | 'workspace';
+    readonly [RelationKeys]?: 'aiReplies' | 'messages' | 'visitor' | 'workspace';
   };
   export type public_Invitation = {
     acceptedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -994,9 +1054,8 @@ export namespace Models {
     workspaceId: CodecTypes['pg/uuid@1']['output'];
     invitationsSent: public_Invitation[];
     messages: public_Message[];
-    replySuggestions: public_ReplySuggestion[];
     workspace: public_Workspace;
-    readonly [RelationKeys]?: 'invitationsSent' | 'messages' | 'replySuggestions' | 'workspace';
+    readonly [RelationKeys]?: 'invitationsSent' | 'messages' | 'workspace';
   };
   export type public_Message = {
     author: 'visitor' | 'agent' | 'member' | 'system';
@@ -1010,30 +1069,11 @@ export namespace Models {
     memberId: CodecTypes['pg/uuid@1']['output'] | null;
     workspaceId: CodecTypes['pg/uuid@1']['output'];
     agentTurns: public_AgentTurn[];
+    aiReplies: public_AiReply[];
     conversation: public_Conversation;
     member: public_Member | null;
     workspace: public_Workspace;
-    readonly [RelationKeys]?: 'agentTurns' | 'conversation' | 'member' | 'workspace';
-  };
-  export type public_ReplySuggestion = {
-    body: CodecTypes['pg/text@1']['output'] | null;
-    conversationId: CodecTypes['pg/uuid@1']['output'];
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    error: CodecTypes['pg/text@1']['output'] | null;
-    finishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-    id: CodecTypes['pg/uuid@1']['output'];
-    idempotencyKey: CodecTypes['pg/text@1']['output'];
-    latencyMs: CodecTypes['pg/int4@1']['output'] | null;
-    memberId: CodecTypes['pg/uuid@1']['output'] | null;
-    model: CodecTypes['pg/text@1']['output'];
-    status: 'pending' | 'succeeded' | 'failed';
-    tokensIn: CodecTypes['pg/int4@1']['output'];
-    tokensOut: CodecTypes['pg/int4@1']['output'];
-    workspaceId: CodecTypes['pg/uuid@1']['output'];
-    conversation: public_Conversation;
-    member: public_Member | null;
-    workspace: public_Workspace;
-    readonly [RelationKeys]?: 'conversation' | 'member' | 'workspace';
+    readonly [RelationKeys]?: 'agentTurns' | 'aiReplies' | 'conversation' | 'member' | 'workspace';
   };
   export type public_Source = {
     chunkCount: CodecTypes['pg/int4@1']['output'];
@@ -1098,23 +1138,23 @@ export namespace Models {
     suggestedQuestions: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     agentTurns: public_AgentTurn[];
+    aiReplies: public_AiReply[];
     chunks: public_Chunk[];
     conversations: public_Conversation[];
     invitations: public_Invitation[];
     members: public_Member[];
     messages: public_Message[];
-    replySuggestions: public_ReplySuggestion[];
     sources: public_Source[];
     usageReports: public_UsageReport[];
     visitors: public_Visitor[];
     readonly [RelationKeys]?:
       | 'agentTurns'
+      | 'aiReplies'
       | 'chunks'
       | 'conversations'
       | 'invitations'
       | 'members'
       | 'messages'
-      | 'replySuggestions'
       | 'sources'
       | 'usageReports'
       | 'visitors';
@@ -1124,13 +1164,13 @@ export namespace Models {
 export declare const models: {
   public: {
     AgentTurn: Models.public_AgentTurn;
+    AiReply: Models.public_AiReply;
     Chunk: Models.public_Chunk;
     Conversation: Models.public_Conversation;
     Invitation: Models.public_Invitation;
     KindeWebhookDelivery: Models.public_KindeWebhookDelivery;
     Member: Models.public_Member;
     Message: Models.public_Message;
-    ReplySuggestion: Models.public_ReplySuggestion;
     Source: Models.public_Source;
     UsageReport: Models.public_UsageReport;
     Visitor: Models.public_Visitor;
@@ -1314,6 +1354,149 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'agent_turns';
+                    readonly columns: readonly ['message_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'messages';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly ai_replies: {
+              columns: {
+                readonly conversation_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly created_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly error: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly finished_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly latency_ms: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
+                readonly message_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly model: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'pending'>;
+                  };
+                };
+                readonly tokens_in: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+                readonly tokens_out: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+                readonly workspace_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['workspace_id', 'message_id'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'ai_replies_conversation_id_idx_0c3639df';
+                  readonly prefix: 'ai_replies_conversation_id_idx';
+                  readonly columns: readonly ['conversation_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'ai_replies_message_id_idx_8a7ff1ba';
+                  readonly prefix: 'ai_replies_message_id_idx';
+                  readonly columns: readonly ['message_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'ai_replies_workspace_id_idx_90a9f461';
+                  readonly prefix: 'ai_replies_workspace_id_idx';
+                  readonly columns: readonly ['workspace_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'ai_replies_workspace_id_status_finished_at_idx_73239375';
+                  readonly prefix: 'ai_replies_workspace_id_status_finished_at_idx';
+                  readonly columns: readonly ['workspace_id', 'status', 'finished_at'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ai_replies';
+                    readonly columns: readonly ['workspace_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'workspaces';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ai_replies';
+                    readonly columns: readonly ['conversation_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'conversations';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ai_replies';
                     readonly columns: readonly ['message_id'];
                   };
                   readonly target: {
@@ -1871,161 +2054,6 @@ type ContractBase = Omit<
                 },
               ];
             };
-            readonly reply_suggestions: {
-              columns: {
-                readonly body: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: true;
-                };
-                readonly conversation_id: {
-                  readonly nativeType: 'uuid';
-                  readonly codecId: 'pg/uuid@1';
-                  readonly nullable: false;
-                };
-                readonly created_at: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: false;
-                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
-                };
-                readonly error: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: true;
-                };
-                readonly finished_at: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: true;
-                };
-                readonly id: {
-                  readonly nativeType: 'uuid';
-                  readonly codecId: 'pg/uuid@1';
-                  readonly nullable: false;
-                };
-                readonly idempotency_key: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                };
-                readonly latency_ms: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: true;
-                };
-                readonly member_id: {
-                  readonly nativeType: 'uuid';
-                  readonly codecId: 'pg/uuid@1';
-                  readonly nullable: true;
-                };
-                readonly model: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                };
-                readonly status: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/text@1', 'pending'>;
-                  };
-                };
-                readonly tokens_in: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly tokens_out: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly workspace_id: {
-                  readonly nativeType: 'uuid';
-                  readonly codecId: 'pg/uuid@1';
-                  readonly nullable: false;
-                };
-              };
-              primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [
-                { readonly columns: readonly ['workspace_id', 'idempotency_key'] },
-              ];
-              indexes: readonly [
-                {
-                  readonly name: 'reply_suggestions_conversation_id_idx_0c3639df';
-                  readonly prefix: 'reply_suggestions_conversation_id_idx';
-                  readonly columns: readonly ['conversation_id'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'reply_suggestions_member_id_idx_10d5a0e2';
-                  readonly prefix: 'reply_suggestions_member_id_idx';
-                  readonly columns: readonly ['member_id'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'reply_suggestions_workspace_id_idx_90a9f461';
-                  readonly prefix: 'reply_suggestions_workspace_id_idx';
-                  readonly columns: readonly ['workspace_id'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'reply_suggestions_workspace_id_status_created_at_idx_2539eff4';
-                  readonly prefix: 'reply_suggestions_workspace_id_status_created_at_idx';
-                  readonly columns: readonly ['workspace_id', 'status', 'created_at'];
-                  readonly unique: false;
-                },
-              ];
-              foreignKeys: readonly [
-                {
-                  readonly source: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'reply_suggestions';
-                    readonly columns: readonly ['workspace_id'];
-                  };
-                  readonly target: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'workspaces';
-                    readonly columns: readonly ['id'];
-                  };
-                },
-                {
-                  readonly source: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'reply_suggestions';
-                    readonly columns: readonly ['conversation_id'];
-                  };
-                  readonly target: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'conversations';
-                    readonly columns: readonly ['id'];
-                  };
-                },
-                {
-                  readonly source: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'reply_suggestions';
-                    readonly columns: readonly ['member_id'];
-                  };
-                  readonly target: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'members';
-                    readonly columns: readonly ['id'];
-                  };
-                },
-              ];
-            };
             readonly sources: {
               columns: {
                 readonly chunk_count: {
@@ -2432,6 +2460,10 @@ type ContractBase = Omit<
                 'failed',
               ];
             };
+            readonly AiReplyStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['pending', 'succeeded', 'failed'];
+            };
             readonly ConversationState: {
               readonly kind: 'valueSet';
               readonly values: readonly ['ai', 'waiting', 'human', 'closed'];
@@ -2443,6 +2475,7 @@ type ContractBase = Omit<
                 'no_relevant_knowledge',
                 'visitor_requested',
                 'agent_off',
+                'ai_reply_limit',
               ];
             };
             readonly InvitationRole: {
@@ -2469,10 +2502,6 @@ type ContractBase = Omit<
                 'off_topic',
                 'human_request',
               ];
-            };
-            readonly ReplySuggestionStatus: {
-              readonly kind: 'valueSet';
-              readonly values: readonly ['pending', 'succeeded', 'failed'];
             };
             readonly SourceKind: {
               readonly kind: 'valueSet';
@@ -2513,6 +2542,7 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'AgentTurn';
     };
+    readonly ai_replies: { readonly namespace: 'public' & NamespaceId; readonly model: 'AiReply' };
     readonly chunks: { readonly namespace: 'public' & NamespaceId; readonly model: 'Chunk' };
     readonly conversations: {
       readonly namespace: 'public' & NamespaceId;
@@ -2528,10 +2558,6 @@ type ContractBase = Omit<
     };
     readonly members: { readonly namespace: 'public' & NamespaceId; readonly model: 'Member' };
     readonly messages: { readonly namespace: 'public' & NamespaceId; readonly model: 'Message' };
-    readonly reply_suggestions: {
-      readonly namespace: 'public' & NamespaceId;
-      readonly model: 'ReplySuggestion';
-    };
     readonly sources: { readonly namespace: 'public' & NamespaceId; readonly model: 'Source' };
     readonly usage_reports: {
       readonly namespace: 'public' & NamespaceId;
@@ -2678,6 +2704,120 @@ type ContractBase = Omit<
                 readonly replyMessageId: { readonly column: 'reply_message_id' };
                 readonly scores: { readonly column: 'scores' };
                 readonly sourceIds: { readonly column: 'source_ids' };
+                readonly tokensIn: { readonly column: 'tokens_in' };
+                readonly tokensOut: { readonly column: 'tokens_out' };
+                readonly workspaceId: { readonly column: 'workspace_id' };
+              };
+            };
+          };
+          readonly AiReply: {
+            readonly fields: {
+              readonly conversationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly error: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly finishedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly latencyMs: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly messageId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly model: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly tokensIn: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly tokensOut: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly workspaceId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+            };
+            readonly relations: {
+              readonly conversation: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Conversation';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['conversationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly message: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Message';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['messageId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly workspace: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Workspace';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['workspaceId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'ai_replies';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly conversationId: { readonly column: 'conversation_id' };
+                readonly createdAt: { readonly column: 'created_at' };
+                readonly error: { readonly column: 'error' };
+                readonly finishedAt: { readonly column: 'finished_at' };
+                readonly id: { readonly column: 'id' };
+                readonly latencyMs: { readonly column: 'latency_ms' };
+                readonly messageId: { readonly column: 'message_id' };
+                readonly model: { readonly column: 'model' };
+                readonly status: { readonly column: 'status' };
                 readonly tokensIn: { readonly column: 'tokens_in' };
                 readonly tokensOut: { readonly column: 'tokens_out' };
                 readonly workspaceId: { readonly column: 'workspace_id' };
@@ -2833,10 +2973,10 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
-              readonly messages: {
+              readonly aiReplies: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'Message';
+                  readonly model: 'AiReply';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -2844,10 +2984,10 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['conversationId'];
                 };
               };
-              readonly replySuggestions: {
+              readonly messages: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'ReplySuggestion';
+                  readonly model: 'Message';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -3088,17 +3228,6 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['memberId'];
                 };
               };
-              readonly replySuggestions: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'ReplySuggestion';
-                };
-                readonly cardinality: '1:N';
-                readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['memberId'];
-                };
-              };
               readonly workspace: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3188,6 +3317,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['messageId'];
                 };
               };
+              readonly aiReplies: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AiReply';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['messageId'];
+                };
+              };
               readonly conversation: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3238,130 +3378,6 @@ type ContractBase = Omit<
                 readonly event: { readonly column: 'event' };
                 readonly id: { readonly column: 'id' };
                 readonly memberId: { readonly column: 'member_id' };
-                readonly workspaceId: { readonly column: 'workspace_id' };
-              };
-            };
-          };
-          readonly ReplySuggestion: {
-            readonly fields: {
-              readonly body: {
-                readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly conversationId: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
-              };
-              readonly createdAt: {
-                readonly nullable: false;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
-              readonly error: {
-                readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly finishedAt: {
-                readonly nullable: true;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
-              readonly id: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
-              };
-              readonly idempotencyKey: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly latencyMs: {
-                readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly memberId: {
-                readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
-              };
-              readonly model: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly status: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly tokensIn: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly tokensOut: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly workspaceId: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
-              };
-            };
-            readonly relations: {
-              readonly conversation: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'Conversation';
-                };
-                readonly cardinality: 'N:1';
-                readonly nullable: false;
-                readonly on: {
-                  readonly localFields: readonly ['conversationId'];
-                  readonly targetFields: readonly ['id'];
-                };
-              };
-              readonly member: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'Member';
-                };
-                readonly cardinality: 'N:1';
-                readonly nullable: true;
-                readonly on: {
-                  readonly localFields: readonly ['memberId'];
-                  readonly targetFields: readonly ['id'];
-                };
-              };
-              readonly workspace: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'Workspace';
-                };
-                readonly cardinality: 'N:1';
-                readonly nullable: false;
-                readonly on: {
-                  readonly localFields: readonly ['workspaceId'];
-                  readonly targetFields: readonly ['id'];
-                };
-              };
-            };
-            readonly storage: {
-              readonly table: 'reply_suggestions';
-              readonly namespaceId: 'public';
-              readonly fields: {
-                readonly body: { readonly column: 'body' };
-                readonly conversationId: { readonly column: 'conversation_id' };
-                readonly createdAt: { readonly column: 'created_at' };
-                readonly error: { readonly column: 'error' };
-                readonly finishedAt: { readonly column: 'finished_at' };
-                readonly id: { readonly column: 'id' };
-                readonly idempotencyKey: { readonly column: 'idempotency_key' };
-                readonly latencyMs: { readonly column: 'latency_ms' };
-                readonly memberId: { readonly column: 'member_id' };
-                readonly model: { readonly column: 'model' };
-                readonly status: { readonly column: 'status' };
-                readonly tokensIn: { readonly column: 'tokens_in' };
-                readonly tokensOut: { readonly column: 'tokens_out' };
                 readonly workspaceId: { readonly column: 'workspace_id' };
               };
             };
@@ -3729,6 +3745,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['workspaceId'];
                 };
               };
+              readonly aiReplies: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AiReply';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['workspaceId'];
+                };
+              };
               readonly chunks: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3777,17 +3804,6 @@ type ContractBase = Omit<
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'Message';
-                };
-                readonly cardinality: '1:N';
-                readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['workspaceId'];
-                };
-              };
-              readonly replySuggestions: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'ReplySuggestion';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -3865,6 +3881,14 @@ type ContractBase = Omit<
               { readonly name: 'Failed'; readonly value: 'failed' },
             ];
           };
+          readonly AiReplyStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'Pending'; readonly value: 'pending' },
+              { readonly name: 'Succeeded'; readonly value: 'succeeded' },
+              { readonly name: 'Failed'; readonly value: 'failed' },
+            ];
+          };
           readonly ConversationState: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -3881,6 +3905,7 @@ type ContractBase = Omit<
               { readonly name: 'NoRelevantKnowledge'; readonly value: 'no_relevant_knowledge' },
               { readonly name: 'VisitorRequested'; readonly value: 'visitor_requested' },
               { readonly name: 'AgentOff'; readonly value: 'agent_off' },
+              { readonly name: 'AiReplyLimit'; readonly value: 'ai_reply_limit' },
             ];
           };
           readonly InvitationRole: {
@@ -3922,14 +3947,6 @@ type ContractBase = Omit<
               { readonly name: 'SmallTalk'; readonly value: 'small_talk' },
               { readonly name: 'OffTopic'; readonly value: 'off_topic' },
               { readonly name: 'HumanRequest'; readonly value: 'human_request' },
-            ];
-          };
-          readonly ReplySuggestionStatus: {
-            readonly codecId: 'pg/text@1';
-            readonly members: readonly [
-              { readonly name: 'Pending'; readonly value: 'pending' },
-              { readonly name: 'Succeeded'; readonly value: 'succeeded' },
-              { readonly name: 'Failed'; readonly value: 'failed' },
             ];
           };
           readonly SourceKind: {
@@ -4055,6 +4072,14 @@ type ContractBase = Omit<
         {
           readonly onCreate: { readonly id: 'uuidv7'; readonly kind: 'generator' };
           readonly ref: {
+            readonly entry: 'ai_replies';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv7'; readonly kind: 'generator' };
+          readonly ref: {
             readonly entry: 'chunks';
             readonly field: 'id';
             readonly namespace: 'public';
@@ -4097,14 +4122,6 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'uuidv7'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'messages';
-            readonly field: 'id';
-            readonly namespace: 'public';
-          };
-        },
-        {
-          readonly onCreate: { readonly id: 'uuidv7'; readonly kind: 'generator' };
-          readonly ref: {
-            readonly entry: 'reply_suggestions';
             readonly field: 'id';
             readonly namespace: 'public';
           };

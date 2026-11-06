@@ -9,7 +9,8 @@ export type HandoffReasonValue =
   | "low_confidence"
   | "no_relevant_knowledge"
   | "visitor_requested"
-  | "agent_off";
+  | "agent_off"
+  | "ai_reply_limit";
 export type MessageAuthorValue = "visitor" | "agent" | "member" | "system";
 export type MessageClassificationValue =
   "support_question" | "small_talk" | "off_topic" | "human_request";

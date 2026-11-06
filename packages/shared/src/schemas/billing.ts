@@ -7,20 +7,24 @@ export const billingCycleSchema = z.object({
   source: z.enum(["kinde", "calendar_month"]),
 });
 
-/** The workspace's plan and this cycle's reply suggestion usage, as Kinde Billing reports them. */
+/** The workspace's plan and this cycle's AI reply usage, as Kinde Billing reports them. */
 export const billingOverviewSchema = z.object({
   plan: z.object({ code: z.string(), name: z.string() }).nullable(),
   cycle: billingCycleSchema,
-  replySuggestions: z.object({
-    /** Whether the plan includes reply suggestions at all. */
+  aiReplies: z.object({
+    /** Whether the plan includes AI replies at all. Without them the agent hands every question off. */
     available: z.boolean(),
-    /** Succeeded suggestions this cycle, from the usage ledger. */
+    /** AI replies this cycle, from the usage ledger. */
     used: z.number().int(),
     /** Units included each cycle. Null when the plan sets no limit. */
     included: z.number().int().nullable(),
+    /** True: replies past `included` are billed as extra. False: the agent hands off at `included`. */
+    overageBilled: z.boolean(),
     /** Units past `included`, billed as extra on the next invoice. */
     extra: z.number().int(),
   }),
+  /** Whether the plan includes reply suggestions for members. */
+  replySuggestions: z.object({ available: z.boolean() }),
 });
 export type BillingOverview = z.infer<typeof billingOverviewSchema>;
 
