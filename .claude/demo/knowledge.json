@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Shipping and delivery",
+    "text": "Northwind Supply ships to the United States, Canada, the United Kingdom, and the European Union.\n\nStandard shipping takes 3 to 5 business days and costs $4.99. Standard shipping is free on orders over $50.\n\nExpress shipping takes 1 to 2 business days and costs $14.99. Express orders placed before 2 pm Eastern Time on a business day ship the same day.\n\nInternational orders take 5 to 10 business days. Customs duties and import taxes for orders outside the United States are paid by the customer on delivery.\n\nEvery order gets a tracking link by email as soon as it ships. Customers can also see the tracking link under Orders in their account.\n\nWe can't change the shipping address after an order has shipped. Before it ships, contact support and we'll update it."
+  },
+  {
+    "title": "Returns and refunds",
+    "text": "Customers can return most items within 30 days of delivery for a full refund. Items must be unused and in their original packaging.\n\nTo start a return, go to Orders in your account, choose the order, and select Return items. We email a prepaid return label. Returns are free for customers in the United States. Customers outside the United States pay for return shipping.\n\nRefunds go back to the original payment method within 5 business days after the return arrives at our warehouse.\n\nThese items can't be returned: gift cards, opened software, personalized or engraved products, and items marked Final sale.\n\nIf an item arrives damaged or wrong, we replace it for free. Send a photo to support within 7 days of delivery and you don't need to send the item back."
+  },
+  {
+    "title": "Warranty",
+    "text": "All electronics from Northwind Supply come with a 2-year limited warranty from the date of delivery. Furniture and home goods come with a 1-year limited warranty.\n\nThe warranty covers defects in materials and workmanship. It doesn't cover accidental damage, water damage, normal wear, or damage from repairs by someone other than us.\n\nTo make a warranty claim, contact support with the order number, a short description of the problem, and a photo or video. If the claim is approved, we repair or replace the item, or refund it if we can't do either. We pay for shipping on approved warranty claims.\n\nExtended protection plans can be added at checkout for 3 years of coverage, including accidental damage."
+  },
+  {
+    "title": "Payments and orders",
+    "text": "We accept Visa, Mastercard, American Express, PayPal, Apple Pay, and Google Pay. Northwind Supply gift cards can be used at checkout and can be combined with any other payment method.\n\nYour card is charged when the order ships, not when you place it. If an order ships in more than one package, you may see more than one charge.\n\nOrders can be canceled for free until they ship. Go to Orders in your account and select Cancel order. Once an order has shipped, it can't be canceled, but it can be returned.\n\nPrices are shown in US dollars on the US store, and in local currency on the Canada, UK, and EU stores. We don't offer price matching. If the price of an item drops within 14 days of delivery, contact support and we refund the difference once per order."
+  },
+  {
+    "title": "Your account",
+    "text": "Customers can order as a guest, but an account lets you track orders, start returns, save addresses, and see past invoices.\n\nTo reset your password, select Forgot password on the sign-in page. We email a reset link that works for 30 minutes.\n\nTo change your email address, go to Account settings. We send a confirmation link to the new address before the change takes effect.\n\nTo delete your account, go to Account settings and select Delete account. Deleting an account cancels open orders that haven't shipped and removes saved addresses and payment methods.\n\nInvoices for every order can be downloaded as PDF files under Orders."
+  },
+  {
+    "title": "Contact and support hours",
+    "text": "Our support team is available Monday to Friday, 8 am to 8 pm Eastern Time, and Saturday, 10 am to 4 pm Eastern Time. We're closed on Sundays and on US public holidays.\n\nYou can reach us through the chat on this website or by email at support@northwind-supply.example. We answer emails within one business day.\n\nFor business orders of 20 items or more, contact our business sales team at sales@northwind-supply.example for volume pricing and invoicing.\n\nNorthwind Supply's warehouse and returns center is located at 400 Harbor Road, Newark, NJ 07114. The warehouse doesn't accept walk-in pickups."
+  }
+]
